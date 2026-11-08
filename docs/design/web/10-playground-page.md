@@ -38,7 +38,8 @@
 
 - Code: `frontend/src/components/Playground.tsx`, `frontend/src/components/OutputPanel.tsx`, `frontend/src/components/Playground.module.css`, `frontend/src/app/globals.css`.
 - Endpoints: `frontend/src/lib/endpoints.ts`. `NEXT_PUBLIC_HUB_URL` overrides the hub origin for local development.
-- Layout: header, banner, toolbar, two panes (one column under 760 px), AI panel. Colors are CSS variables with a dark scheme.
+- Layout: a flex column of header (title, About Goose, Log in or the account), banner, toolbar, two panes (one column under 760 px) that take the spare height, and the AI panel ([AI Connection Design](40-ai-connection.md)). Colors are CSS variables with a dark scheme.
+- Endpoints also include the session socket, the MCP URL, the account API origin (the hub origin) and the main site (`NEXT_PUBLIC_SITE_URL`).
 - The editor is a plain `textarea` until the editor component is chosen.
 - Contract types: `frontend/src/lib/contract.ts` re-exports generated schema types. See [Contract Types](15-contract-types.md).
 

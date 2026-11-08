@@ -6,3 +6,7 @@
 - [Samples Design](20-samples.md) — Confirmed replacement with a bundled CLI sample
 
 - [URL Sharing Design](30-url-sharing.md) — A copied share URL or decoded source with bounded size
+
+- [AI Connection Design](40-ai-connection.md) — Session client, allow-list parsing, AI panel and output
+
+- [Account Login Design](50-account-login.md) — Account client, login dialog and Google sign-in

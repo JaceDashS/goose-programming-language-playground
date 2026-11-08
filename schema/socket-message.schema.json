@@ -2,22 +2,38 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://goose-playground.jace-s.com/schema/socket-message.schema.json",
   "title": "SocketMessage",
-  "description": "Fixed allow-list of WebSocket messages between the browser and the hub. Any other message is dropped. The browser never executes received code.",
+  "description": "Fixed allow-list of WebSocket messages on wss://api.jace-s.com/goose/session between the browser and the hub. Any other message is dropped. The browser never executes received code.",
   "oneOf": [
+    { "$ref": "#/$defs/start" },
     { "$ref": "#/$defs/hello" },
     { "$ref": "#/$defs/setCode" },
     { "$ref": "#/$defs/getCode" },
     { "$ref": "#/$defs/codeSnapshot" },
     { "$ref": "#/$defs/runStarted" },
     { "$ref": "#/$defs/runFinished" },
+    { "$ref": "#/$defs/checkStarted" },
+    { "$ref": "#/$defs/checkFinished" },
     { "$ref": "#/$defs/aiActivity" },
+    { "$ref": "#/$defs/toolFailed" },
+    { "$ref": "#/$defs/sessionEnded" },
     { "$ref": "#/$defs/disconnect" }
   ],
   "$defs": {
+    "start": {
+      "description": "browser -> hub, the first message after connect. Carries a fresh Turnstile token when Turnstile is on.",
+      "type": "object", "additionalProperties": false, "required": ["type"],
+      "properties": { "type": { "const": "start" }, "turnstileToken": { "type": "string", "maxLength": 2048 } }
+    },
     "hello": {
-      "description": "hub -> browser, right after connect. Issues the session token.",
-      "type": "object", "additionalProperties": false, "required": ["type", "sessionToken"],
-      "properties": { "type": { "const": "hello" }, "sessionToken": { "type": "string", "minLength": 32 } }
+      "description": "hub -> browser, the answer to start. Issues the session token and its lifetime.",
+      "type": "object", "additionalProperties": false, "required": ["type", "sessionToken", "loggedIn", "idleSeconds", "expiresAt"],
+      "properties": {
+        "type": { "const": "hello" },
+        "sessionToken": { "type": "string", "minLength": 32 },
+        "loggedIn": { "type": "boolean", "description": "True when the jace-s session cookie was valid, which gives the longer lifetime." },
+        "idleSeconds": { "type": "integer", "minimum": 1, "description": "The session ends after this long without an MCP call." },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "The session ends at this time at the latest." }
+      }
     },
     "setCode": {
       "description": "hub -> browser. Replace the editor content (AI set_code).",
@@ -25,17 +41,17 @@
       "properties": { "type": { "const": "setCode" }, "code": { "type": "string", "maxLength": 65536 } }
     },
     "getCode": {
-      "description": "hub -> browser. Ask for the current editor content (AI get_code).",
+      "description": "hub -> browser. Ask for the current editor content (AI get_code, run, check).",
       "type": "object", "additionalProperties": false, "required": ["type", "requestId"],
-      "properties": { "type": { "const": "getCode" }, "requestId": { "type": "string" } }
+      "properties": { "type": { "const": "getCode" }, "requestId": { "type": "string", "minLength": 1, "maxLength": 64 } }
     },
     "codeSnapshot": {
       "description": "browser -> hub. Answer to getCode.",
       "type": "object", "additionalProperties": false, "required": ["type", "requestId", "code"],
-      "properties": { "type": { "const": "codeSnapshot" }, "requestId": { "type": "string" }, "code": { "type": "string", "maxLength": 65536 } }
+      "properties": { "type": { "const": "codeSnapshot" }, "requestId": { "type": "string", "minLength": 1, "maxLength": 64 }, "code": { "type": "string", "maxLength": 65536 } }
     },
     "runStarted": {
-      "description": "hub -> browser. The AI started a run of the current code.",
+      "description": "hub -> browser. The AI started a run of the editor content.",
       "type": "object", "additionalProperties": false, "required": ["type"],
       "properties": { "type": { "const": "runStarted" } }
     },
@@ -44,15 +60,57 @@
       "type": "object", "additionalProperties": false, "required": ["type", "result"],
       "properties": { "type": { "const": "runFinished" }, "result": { "$ref": "run-result.schema.json" } }
     },
+    "checkStarted": {
+      "description": "hub -> browser. The AI started a check of the editor content.",
+      "type": "object", "additionalProperties": false, "required": ["type"],
+      "properties": { "type": { "const": "checkStarted" } }
+    },
+    "checkFinished": {
+      "description": "hub -> browser. Result of the AI-started check, shown in the output panel.",
+      "type": "object", "additionalProperties": false, "required": ["type", "result"],
+      "properties": { "type": { "const": "checkFinished" }, "result": { "$ref": "check-result.schema.json" } }
+    },
     "aiActivity": {
-      "description": "hub -> browser. Drives the AI connected indicator.",
-      "type": "object", "additionalProperties": false, "required": ["type", "connected"],
-      "properties": { "type": { "const": "aiActivity" }, "connected": { "type": "boolean" } }
+      "description": "hub -> browser. The AI called a tool with this session's token; drives the AI connected indicator.",
+      "type": "object", "additionalProperties": false, "required": ["type", "tool"],
+      "properties": { "type": { "const": "aiActivity" }, "tool": { "type": "string", "enum": ["get_code", "set_code", "run", "check"] } }
+    },
+    "toolFailed": {
+      "description": "hub -> browser. An AI run or check that was announced with runStarted or checkStarted ended without a result.",
+      "type": "object", "additionalProperties": false, "required": ["type", "tool", "message"],
+      "properties": { "type": { "const": "toolFailed" }, "tool": { "type": "string", "enum": ["run", "check"] }, "message": { "type": "string", "maxLength": 500 } }
+    },
+    "sessionEnded": {
+      "description": "hub -> browser, sent just before the hub closes the socket. The token no longer works.",
+      "type": "object", "additionalProperties": false, "required": ["type", "reason"],
+      "properties": {
+        "type": { "const": "sessionEnded" },
+        "reason": {
+          "type": "string",
+          "enum": ["idle", "expired", "full", "ip_limit", "account_limit", "turnstile_failed", "shutdown"],
+          "description": "idle: no MCP call for idleSeconds. expired: reached expiresAt. full: the global session cap is reached. ip_limit / account_limit: this visitor already has the maximum sessions. turnstile_failed: the browser check failed. shutdown: the hub is restarting."
+        }
+      }
     },
     "disconnect": {
-      "description": "browser -> hub. Revoke the session token now.",
+      "description": "browser -> hub. Revoke the token now.",
       "type": "object", "additionalProperties": false, "required": ["type"],
       "properties": { "type": { "const": "disconnect" } }
     }
-  }
+  },
+  "examples": [
+    { "type": "start", "turnstileToken": "0.abc" },
+    { "type": "hello", "sessionToken": "4f9c2d7a1b3e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5061728394a5b6c7d8e", "loggedIn": false, "idleSeconds": 1800, "expiresAt": "2026-11-09T03:00:00Z" },
+    { "type": "setCode", "code": "fn main() {\n    print(2);\n}\n" },
+    { "type": "getCode", "requestId": "r1" },
+    { "type": "codeSnapshot", "requestId": "r1", "code": "fn main() {\n    print(2);\n}\n" },
+    { "type": "runStarted" },
+    { "type": "runFinished", "result": { "outcome": "exited", "exitCode": 0, "stdout": "2\n", "stderr": "", "diagnostics": [], "truncated": false, "durationMs": 182, "backend": "onprem" } },
+    { "type": "checkStarted" },
+    { "type": "checkFinished", "result": { "outcome": "ok", "diagnostics": [], "durationMs": 35 } },
+    { "type": "aiActivity", "tool": "set_code" },
+    { "type": "toolFailed", "tool": "run", "message": "The server is busy, so the AI connection (MCP) cannot run code right now." },
+    { "type": "sessionEnded", "reason": "idle" },
+    { "type": "disconnect" }
+  ]
 }

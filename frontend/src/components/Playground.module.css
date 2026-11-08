@@ -1,6 +1,6 @@
 .shell {
-  display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
   max-width: 1400px;
   margin: 0 auto;
@@ -47,7 +47,8 @@
 .shareMessage { min-width: 0; color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
 .shareMessage:empty { display: none; }
 .hint { color: var(--muted); font-size: 0.85rem; }
-.panes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 420px; }
+.panes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 420px; flex: 1; }
+.aiPanel > [role="status"]:empty { display: none; }
 .editorPane, .outputPane {
   border: 1px solid var(--border); border-radius: 8px; background: var(--panel); min-width: 0; overflow: hidden;
 }
@@ -65,9 +66,47 @@
 .error { color: var(--err-fg); }
 .warning { color: var(--warn-fg); }
 .aiPanel {
-  display: flex; gap: 12px; align-items: baseline; padding: 12px 14px;
+  display: grid; gap: 10px; padding: 12px 14px;
   border: 1px dashed var(--border); border-radius: 8px;
 }
+.aiHead { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.aiHead > .hint, .aiHead > .aiLive { flex: 1 1 240px; }
+.aiLive { color: var(--accent); font-size: 0.85rem; font-weight: 600; }
+.aiPanel .hint, .aiPanel .warning { margin: 0; font-size: 0.85rem; }
+.prompt {
+  width: 100%; resize: vertical; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--fg); font: 13px/1.5 var(--font-mono);
+}
+.setup { color: var(--muted); font-size: 0.85rem; }
+.setup summary { cursor: pointer; }
+.setup ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.setup p { margin: 6px 0 0; }
+.setup code { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.small {
+  font: inherit; font-size: 0.8rem; padding: 2px 10px; border-radius: 6px; cursor: pointer;
+  background: var(--panel); color: var(--fg); border: 1px solid var(--border);
+}
+.headerLinks { display: flex; align-items: baseline; gap: 16px; }
+.account { display: inline-flex; align-items: baseline; gap: 8px; }
+.linkButton {
+  background: none; border: 0; padding: 0; font: inherit; font-size: 0.9rem; color: var(--accent);
+  cursor: pointer; text-decoration: underline;
+}
+.dialog {
+  width: min(400px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--panel); color: var(--fg);
+}
+.dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+.loginForm { display: grid; gap: 12px; padding: 20px; }
+.dialogTitle { margin: 0; font-size: 1.05rem; }
+.field { display: grid; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.field input {
+  min-height: 38px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--fg); font: inherit; font-size: 0.95rem;
+}
+.check { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; }
+.dialogActions { display: flex; justify-content: flex-end; gap: 8px; }
+.loginForm .hint, .loginForm .error { margin: 0; }
 @media (max-width: 760px) {
   .toolbar { gap: 8px; }
   .samplePicker { flex: 1 1 200px; }
@@ -84,3 +123,6 @@
   justify-content: flex-end;
   margin-left: auto;
 }
+
+/* The narrow-screen rule above hides the toolbar shortcut hint; panel and dialog hints stay visible. */
+.aiPanel .hint, .loginForm .hint, .account .hint { display: revert; }

@@ -5,6 +5,8 @@ export type { RunRequest } from "./generated/run-request";
 export type { RunResult, Diagnostic } from "./generated/run-result";
 export type { ErrorResponse } from "./generated/error";
 export type { Health } from "./generated/health";
+export type { CheckResult } from "./generated/check-result";
+export type { SocketMessage } from "./generated/socket-message";
 export type Outcome = RunResult["outcome"];
 export type Backend = RunResult["backend"];
 export type ErrorCode = ErrorResponse["error"]["code"];

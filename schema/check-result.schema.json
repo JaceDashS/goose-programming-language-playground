@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/check-result.schema.json",
+  "title": "CheckResult",
+  "description": "Result of goose check without running the program. Returned by the runner's POST /check, the MCP check tool, and sent to the browser in checkFinished.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome", "diagnostics", "durationMs"],
+  "properties": {
+    "outcome": {
+      "type": "string",
+      "enum": ["ok", "compile_error", "timeout", "killed"],
+      "description": "ok: the check passed (warnings may remain). compile_error: the check found errors. timeout: stopped at the time limit. killed: stopped by the memory or process limit."
+    },
+    "diagnostics": {
+      "type": "array",
+      "description": "Errors and warnings from goose check --diagnostics json. Empty when there are none.",
+      "items": { "$ref": "run-result.schema.json#/$defs/diagnostic" }
+    },
+    "durationMs": { "type": "integer", "minimum": 0, "description": "Wall time inside the container." }
+  },
+  "examples": [
+    { "outcome": "ok", "diagnostics": [], "durationMs": 35 },
+    { "outcome": "compile_error", "diagnostics": [{ "severity": "error", "message": "expression expected", "line": 1, "col": 23 }], "durationMs": 41 }
+  ]
+}

@@ -72,15 +72,16 @@ Scenario:
 
 ## Agent Mode
 
-- The browser opens a WebSocket to the hub and receives a session token. The starter prompt includes the token.
-- The user registers the MCP server in Claude, ChatGPT, Claude Code or Codex once, then only pastes the starter prompt.
-- MCP tools (draft; contents are a later planning item):
-  - Learning: `goose_docs`, `get_sample`
-  - Session (token required): `get_code`, `set_code`, `run`, `check`
-- Socket commands are a fixed allow-list: insert code, read code, run, read output. **Running arbitrary JavaScript in the browser is forbidden.**
-- The token expires when the tab closes. The page shows an "AI connected" indicator and a disconnect button.
-- Execution goes through the runner, and results are sent to both the browser and the AI.
-- Quotas use the browser session (real IP, login state). This avoids the problem that claude.ai/ChatGPT MCP calls all arrive from the same few IPs.
+- The user presses Connect AI; the browser opens `wss://api.jace-s.com/goose/session` and receives a session token. The starter prompt includes the token.
+- The user registers the MCP server `https://api.jace-s.com/goose/mcp` (stateless Streamable HTTP, no OAuth) in Claude, ChatGPT, Claude Code or Codex once, then only pastes the starter prompt (D-0036).
+- MCP tools (D-0037):
+  - Learning: `goose_docs(topic?, section?, page?)`, `get_sample(name?)`
+  - Session (token required): `get_code`, `set_code(code)`, `run`, `check`; `run` and `check` use the editor content.
+- Socket messages are a fixed allow-list ([Session Socket](../api/20-socket.md)). **Running arbitrary JavaScript in the browser is forbidden.**
+- The token ends when the tab closes or presses Disconnect, after 30 min without MCP calls (2 h when logged in with a jace-s account), or after 2 h at most (8 h logged in). At most 4 sessions, 2 per IP or per account (D-0038, D-0041).
+- The page shows an "AI connected" indicator with the last action, and a Disconnect button. Login: [Account Login](../specs/web/50-account-login.md).
+- Execution goes through the runner, and results are sent to both the browser and the AI. MCP runs never fall back to Vercel Sandbox.
+- MCP runs bypass Turnstile, so they have their own limits: one at a time per session, at most one of the two runner slots, 30 per 10 min and 120 per session, 300 per hour in total (D-0040, proposed values).
 - There is no `llms.txt`. AI-facing documentation is served only through MCP.
 
 Scenario:
@@ -122,12 +123,12 @@ As of 2026-11-08.
 
 | Part | State | Documents |
 | --- | --- | --- |
-| Run contracts | Draft, awaiting confirmation | [Run API](../api/10-run.md), [Session Socket](../api/20-socket.md) |
+| Run contracts | Run API draft, awaiting confirmation; session socket set by D-0036 to D-0041 | [Run API](../api/10-run.md), [Session Socket](../api/20-socket.md) |
 | Run image and runner | Implemented and verified on production gVisor; moved to the jace-s platform | jace-s platform `services/goose/` |
 | Hub run and health | Implemented, quotas not yet; moved to the jace-s platform | jace-s platform `services/goose/` |
 | Playground page | Implemented with a plain text area | [Playground Page Design](../design/web/10-playground-page.md) |
 | Vercel fallback | Implemented and verified with a live SDK sandbox | [Vercel Fallback Design](../design/run/30-vercel-fallback.md) |
-| Agent mode (MCP, socket) | Not started | [Session Socket](../api/20-socket.md) |
+| Agent mode (MCP, socket, login) | Implemented and verified locally (2026-11-09); not yet deployed. Hub side in the jace-s platform | [AI Connection Design](../design/web/40-ai-connection.md), [Account Login Design](../design/web/50-account-login.md) |
 | gVisor on the server | Installed and verified, release-20261102.0; operated by the jace-s platform | jace-s platform `services/goose/` |
 
 ## Open Planning Items
@@ -136,7 +137,7 @@ As of 2026-11-08.
 2. Abuse control: quota numbers, CPU budget, global caps, code storage scope (proposal: all code 7 days + suspicious code 90 days), suspicious-score rules.
 3. Login: which account to use (a jace-s account?), and how to handle `api.jace-s.com` cookies.
 4. Data store: where quota counters, run logs and suspicious code are stored.
-5. MCP and socket details: endpoint addresses, tool inputs and outputs, `goose_docs` contents, socket command list, token lifetime, agent session cap, starter prompt wording.
+5. MCP and socket details: decided (D-0036 to D-0043). The MCP run limit values (D-0040) still await the user's review.
 6. Privacy notice, needed if code and IPs are stored.
 7. Operations: gVisor install procedure, monitoring and alerts, Goose version update procedure.
 8. UI: layout, banners, AI connection panel, sample list, mobile support.

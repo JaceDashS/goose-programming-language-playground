@@ -15,7 +15,8 @@
 - Sample and Share use the toolbar theme: matching control height, rounded borders, light and dark colors, visible keyboard focus and wrapping at phone widths.
 - The layout works from phone width (one column) to desktop (editor and output side by side).
 - Turnstile: when the build has `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, every run request (hub, fallback, and the retry after `use_primary`) carries its own fresh Turnstile token, because a token is single use. The widget appears only when the visitor must interact. If no token can be obtained, the run is not sent and the page shows `turnstile_failed`. Without the site key, no Turnstile script is loaded and runs carry no token.
-- Not yet decided, so not part of this version: the editor component, the AI connection panel's content.
+- Not yet decided, so not part of this version: the editor component.
+- The AI connection panel and the header login: [AI Connection](40-ai-connection.md), [Account Login](50-account-login.md).
 
 ## Example
 

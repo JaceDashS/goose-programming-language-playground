@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Health, ServiceState } from "@/lib/contract";
-import { runGoose, type RunOutcome } from "@/lib/runGoose";
+import { runGoose } from "@/lib/runGoose";
+import { connectAgent, type AgentConnection, type AgentState } from "@/lib/agentSession";
+import { createAccountClient, type AccountUser } from "@/lib/account";
 import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/serviceState";
 import { endpoints } from "@/lib/endpoints";
 import { encodeShare, decodeShare, SHARE_INVALID } from "@/lib/share";
 import { samples } from "@/samples";
 import { createTurnstileWidget, loadTurnstile, turnstileSiteKey, type TurnstileWidget } from "@/lib/turnstile";
-import OutputPanel from "./OutputPanel";
+import OutputPanel, { type PanelOutcome } from "./OutputPanel";
+import AiPanel from "./AiPanel";
+import LoginDialog from "./LoginDialog";
 import styles from "./Playground.module.css";
 
 const HELLO = `fn main() {
@@ -16,10 +20,19 @@ const HELLO = `fn main() {
 }
 `;
 
+const account = createAccountClient(endpoints.account);
+
 export default function Playground() {
   const [code, setCode] = useState(HELLO);
   const [running, setRunning] = useState(false);
-  const [outcome, setOutcome] = useState<RunOutcome | null>(null);
+  const [outcome, setOutcome] = useState<PanelOutcome | null>(null);
+  const [aiBusy, setAiBusy] = useState<string | null>(null);
+  const [byAI, setByAI] = useState(false);
+  const [agent, setAgent] = useState<AgentState>({ status: "idle" });
+  const connection = useRef<AgentConnection | null>(null);
+  const codeRef = useRef(HELLO);
+  const [user, setUser] = useState<AccountUser | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
   const [state, setState] = useState<ServiceState>("normal");
   const fallbackDown = useRef(false);
@@ -42,6 +55,18 @@ export default function Playground() {
       ready.then(widget => widget.dispose(), () => undefined);
     };
   }, [siteKey]);
+
+  // The AI reads the editor through the session socket; keep the latest content at hand.
+  useEffect(() => { codeRef.current = code; }, [code]);
+
+  useEffect(() => {
+    let cancelled = false;
+    account.session().then((u) => { if (!cancelled) setUser(u); }, () => undefined);
+    return () => { cancelled = true; };
+  }, []);
+
+  // Closing the tab closes the socket, which ends the session on the hub.
+  useEffect(() => () => connection.current?.disconnect(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,23 +124,57 @@ export default function Playground() {
     };
   }, []);
 
+  const getToken = useCallback(async () => {
+    if (!turnstile.current) throw new Error("The browser check is not ready yet.");
+    return (await turnstile.current).getToken();
+  }, []);
+
   const run = useCallback(async () => {
     setRunning(true);
     try {
-      const getToken = siteKey
-        ? async () => {
-          if (!turnstile.current) throw new Error("The browser check is not ready yet.");
-          return (await turnstile.current).getToken();
-        }
-        : undefined;
-      const out = await runGoose(code, endpoints, { getToken });
+      const out = await runGoose(code, endpoints, { getToken: siteKey ? getToken : undefined });
       fallbackDown.current = out.state === "outage";
       setState(out.state);
+      setByAI(false);
       setOutcome(out);
     } finally {
       setRunning(false);
     }
-  }, [code, siteKey]);
+  }, [code, siteKey, getToken]);
+
+  const connectAI = () => {
+    connection.current?.disconnect();
+    connection.current = connectAgent(endpoints.session, {
+      getCode: () => codeRef.current,
+      setCode: (next) => {
+        edited.current = true;
+        codeRef.current = next;
+        setCode(next);
+      },
+      onStarted: (tool) => setAiBusy(tool === "run" ? "AI is running the code…" : "AI is checking the code…"),
+      onRunFinished: (result) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "result", result, state: "normal" }); },
+      onCheckFinished: (result) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "check", result }); },
+      onToolFailed: (_tool, message) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "error", code: "busy", message, state: "normal" }); },
+      onState: (next) => {
+        setAgent(next);
+        if (next.status === "ended" || next.status === "idle") setAiBusy(null);
+      },
+    }, { getToken: siteKey ? getToken : undefined });
+  };
+
+  const disconnectAI = () => {
+    connection.current?.disconnect();
+    connection.current = null;
+  };
+
+  const logout = async () => {
+    try {
+      await account.logout();
+      setUser(null);
+    } catch {
+      setShareMessage("Logout failed. Try again.");
+    }
+  };
 
   const banner = BANNER[state];
   const canRun = state !== "outage" && !running;
@@ -124,10 +183,27 @@ export default function Playground() {
     <div className={styles.shell}>
       <header className={styles.header}>
         <h1 className={styles.title}>Goose Playground</h1>
-        <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
-          About Goose
-        </a>
+        <nav className={styles.headerLinks}>
+          <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
+            About Goose
+          </a>
+          {user ? (
+            <span className={styles.account}>
+              <span className={styles.hint}>{user.displayName || user.username}</span>
+              <button type="button" className={styles.linkButton} onClick={logout}>Log out</button>
+            </span>
+          ) : (
+            <button type="button" className={styles.linkButton} onClick={() => setLoginOpen(true)}>Log in</button>
+          )}
+        </nav>
       </header>
+      {loginOpen && (
+        <LoginDialog
+          client={account}
+          onClose={() => setLoginOpen(false)}
+          onLoggedIn={(u) => { setUser(u); setLoginOpen(false); }}
+        />
+      )}
 
       {banner && (
         <div className={state === "outage" ? styles.bannerOutage : styles.bannerDegraded} role="status">
@@ -184,16 +260,18 @@ export default function Playground() {
           />
         </section>
         <section className={styles.outputPane} aria-label="Output">
-          <OutputPanel outcome={outcome} running={running} />
+          <OutputPanel outcome={outcome} busy={running ? "Running…" : aiBusy} byAI={byAI} />
         </section>
       </main>
 
-      <aside className={styles.aiPanel} aria-label="AI connection">
-        <strong>AI connection</strong>
-        <span className={styles.hint}>
-          {agentAllowed(state, health) ? "Coming soon: connect Claude or ChatGPT through MCP." : "Unavailable right now."}
-        </span>
-      </aside>
+      <AiPanel
+        state={agent}
+        available={agentAllowed(state, health)}
+        loggedIn={!!user}
+        onConnect={connectAI}
+        onDisconnect={disconnectAI}
+        onLogin={() => setLoginOpen(true)}
+      />
     </div>
   );
 }

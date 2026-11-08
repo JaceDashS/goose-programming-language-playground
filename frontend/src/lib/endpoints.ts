@@ -6,4 +6,12 @@ export const endpoints = {
   primary: `${hub}/goose/run`,
   health: `${hub}/goose/health`,
   fallback: "/api/run",
+  /** Agent session socket (wss://api.jace-s.com/goose/session). */
+  session: `${hub.replace(/^http/, "ws")}/goose/session`,
+  /** MCP endpoint the user registers in the AI. */
+  mcp: `${hub}/goose/mcp`,
+  /** jace-s account API (login, Google sign-in). The hub shares this host, so the login cookie reaches it. */
+  account: hub,
+  /** Main site pages for sign-up and password reset. */
+  site: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://jace-s.com").replace(/\/$/, ""),
 };

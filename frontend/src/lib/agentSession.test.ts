@@ -1,0 +1,143 @@
+import { describe, expect, it, vi } from "vitest";
+import { connectAgent, parseHubMessage, starterPrompt, type AgentHandlers, type AgentState } from "./agentSession";
+
+class FakeSocket {
+  static OPEN = 1;
+  static last: FakeSocket;
+  readyState = 0;
+  sent: unknown[] = [];
+  closed = false;
+  onopen: (() => void) | null = null;
+  onmessage: ((e: { data: unknown }) => void) | null = null;
+  onclose: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  constructor(public url: string) { FakeSocket.last = this; }
+  send(data: string) { this.sent.push(JSON.parse(data)); }
+  close() { this.closed = true; }
+  open() { this.readyState = 1; this.onopen?.(); }
+  hub(m: unknown) { this.onmessage?.({ data: typeof m === "string" ? m : JSON.stringify(m) }); }
+}
+
+function setup(getToken?: () => Promise<string>) {
+  let editor = "fn main() {}";
+  const states: AgentState[] = [];
+  const handlers: AgentHandlers = {
+    getCode: () => editor,
+    setCode: vi.fn((c: string) => { editor = c; }),
+    onStarted: vi.fn(),
+    onRunFinished: vi.fn(),
+    onCheckFinished: vi.fn(),
+    onToolFailed: vi.fn(),
+    onState: (s) => states.push(s),
+  };
+  const conn = connectAgent("wss://hub/goose/session", handlers, {
+    WebSocket: FakeSocket as unknown as typeof WebSocket,
+    getToken,
+    now: () => new Date("2026-11-09T01:00:00Z"),
+  });
+  return { conn, handlers, states, ws: FakeSocket.last, editor: () => editor };
+}
+
+const flush = () => new Promise((r) => setTimeout(r, 0));
+const hello = { type: "hello", sessionToken: "a".repeat(64), loggedIn: false, idleSeconds: 1800, expiresAt: "2026-11-09T03:00:00Z" };
+
+describe("connectAgent", () => {
+  it("sends start with a Turnstile token and reports the session", async () => {
+    const { ws, states } = setup(async () => "tok");
+    expect(states.at(-1)).toEqual({ status: "connecting" });
+    ws.open();
+    await flush();
+    expect(ws.sent).toEqual([{ type: "start", turnstileToken: "tok" }]);
+    ws.hub(hello);
+    expect(states.at(-1)).toMatchObject({ status: "connected", token: "a".repeat(64), loggedIn: false, idleSeconds: 1800 });
+  });
+
+  it("applies setCode, answers getCode with the editor and shows results", async () => {
+    const { ws, handlers, editor } = setup();
+    ws.open();
+    await flush();
+    ws.hub(hello);
+    ws.hub({ type: "setCode", code: "fn main() { print(2); }" });
+    expect(editor()).toBe("fn main() { print(2); }");
+    ws.hub({ type: "getCode", requestId: "r1" });
+    expect(ws.sent.at(-1)).toEqual({ type: "codeSnapshot", requestId: "r1", code: "fn main() { print(2); }" });
+    ws.hub({ type: "runStarted" });
+    expect(handlers.onStarted).toHaveBeenCalledWith("run");
+    const result = { outcome: "exited", exitCode: 0, stdout: "2\n", stderr: "", diagnostics: [], truncated: false, durationMs: 5, backend: "onprem" };
+    ws.hub({ type: "runFinished", result });
+    expect(handlers.onRunFinished).toHaveBeenCalledWith(result);
+    ws.hub({ type: "toolFailed", tool: "check", message: "busy" });
+    expect(handlers.onToolFailed).toHaveBeenCalledWith("check", "busy");
+  });
+
+  it("records AI activity", async () => {
+    const { ws, states } = setup();
+    ws.open();
+    await flush();
+    ws.hub(hello);
+    ws.hub({ type: "aiActivity", tool: "set_code" });
+    expect(states.at(-1)).toMatchObject({ status: "connected", lastTool: "set_code" });
+  });
+
+  it("drops anything outside the allow-list", async () => {
+    const { ws, handlers } = setup();
+    ws.open();
+    await flush();
+    ws.hub(hello);
+    ws.hub("not json");
+    ws.hub({ type: "eval", code: "alert(1)" });
+    ws.hub({ type: "setCode", code: 42 });
+    expect(handlers.setCode).not.toHaveBeenCalled();
+  });
+
+  it("ends with the hub's reason, or lost when the socket just closes", async () => {
+    const a = setup();
+    a.ws.open();
+    await flush();
+    a.ws.hub({ type: "sessionEnded", reason: "idle" });
+    a.ws.onclose?.();
+    expect(a.states.at(-1)).toEqual({ status: "ended", reason: "idle" });
+    const b = setup();
+    b.ws.open();
+    await flush();
+    b.ws.onclose?.();
+    expect(b.states.at(-1)).toEqual({ status: "ended", reason: "lost" });
+  });
+
+  it("disconnect revokes the token and returns to idle", async () => {
+    const { ws, conn, states } = setup();
+    ws.open();
+    await flush();
+    ws.hub(hello);
+    conn.disconnect();
+    expect(ws.sent.at(-1)).toEqual({ type: "disconnect" });
+    expect(ws.closed).toBe(true);
+    ws.onclose?.();
+    expect(states.at(-1)).toEqual({ status: "idle" });
+  });
+
+  it("ends with error when the browser check fails", async () => {
+    const { ws, states } = setup(async () => { throw new Error("no"); });
+    ws.open();
+    await flush();
+    expect(ws.sent).toEqual([]);
+    expect(states.at(-1)).toEqual({ status: "ended", reason: "error" });
+  });
+});
+
+describe("parseHubMessage", () => {
+  it("accepts only known hub messages with the right fields", () => {
+    expect(parseHubMessage(JSON.stringify({ type: "runStarted", extra: 1 }))).toEqual({ type: "runStarted" });
+    expect(parseHubMessage(JSON.stringify({ type: "sessionEnded", reason: "nope" }))).toBeNull();
+    expect(parseHubMessage(JSON.stringify({ type: "codeSnapshot", requestId: "r", code: "" }))).toBeNull();
+    expect(parseHubMessage(JSON.stringify([1]))).toBeNull();
+  });
+});
+
+it("starter prompt names the server, the token and the workflow", () => {
+  const p = starterPrompt("t".repeat(64), "https://api.jace-s.com/goose/mcp");
+  expect(p).toContain("Session token: " + "t".repeat(64));
+  expect(p).toContain("https://api.jace-s.com/goose/mcp");
+  expect(p).toContain("goose_docs");
+  expect(p.split("\n")).toHaveLength(4);
+});

@@ -29,8 +29,9 @@
 - Note: This is cloud bursting (overflow) plus failover, not even load balancing. The agent mode does not fall back.
 
 ## Session Token
-- Definition: A random token the hub issues when the browser connects over WebSocket. It is included in the AI starter prompt, and MCP tools use it to find the user's browser session.
-- Note: Anyone who has the token can control that session's editor. It expires when the tab closes.
+- Definition: A random 64-character token the hub issues after the user presses Connect AI. It is included in the AI starter prompt, and MCP tools use it to find the user's browser session.
+- Code: `hello.sessionToken` in `frontend/src/lib/agentSession.ts`.
+- Note: Anyone who has the token can control that session's editor. It ends when the tab closes or disconnects, after the idle time without MCP calls, or at its maximum time.
 
 ## Starter Prompt
 - Definition: The text a user copies from the playground and pastes into Claude or ChatGPT. It contains the session token and how to use the MCP tools.

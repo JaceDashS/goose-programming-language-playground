@@ -1,17 +1,48 @@
 /* Generated from schema/socket-message.schema.json. Run npm run gen:contract to update. */
 
 /**
- * Fixed allow-list of WebSocket messages between the browser and the hub. Any other message is dropped. The browser never executes received code.
+ * Fixed allow-list of WebSocket messages on wss://api.jace-s.com/goose/session between the browser and the hub. Any other message is dropped. The browser never executes received code.
  */
 export type SocketMessage =
-  Hello | SetCode | GetCode | CodeSnapshot | RunStarted | RunFinished | AiActivity | Disconnect;
+  | Start
+  | Hello
+  | SetCode
+  | GetCode
+  | CodeSnapshot
+  | RunStarted
+  | RunFinished
+  | CheckStarted
+  | CheckFinished
+  | AiActivity
+  | ToolFailed
+  | SessionEnded
+  | Disconnect;
 
 /**
- * hub -> browser, right after connect. Issues the session token.
+ * browser -> hub, the first message after connect. Carries a fresh Turnstile token when Turnstile is on.
+ */
+export interface Start {
+  type: "start";
+  turnstileToken?: string;
+}
+/**
+ * hub -> browser, the answer to start. Issues the session token and its lifetime.
  */
 export interface Hello {
   type: "hello";
   sessionToken: string;
+  /**
+   * True when the jace-s session cookie was valid, which gives the longer lifetime.
+   */
+  loggedIn: boolean;
+  /**
+   * The session ends after this long without an MCP call.
+   */
+  idleSeconds: number;
+  /**
+   * The session ends at this time at the latest.
+   */
+  expiresAt: string;
 }
 /**
  * hub -> browser. Replace the editor content (AI set_code).
@@ -21,7 +52,7 @@ export interface SetCode {
   code: string;
 }
 /**
- * hub -> browser. Ask for the current editor content (AI get_code).
+ * hub -> browser. Ask for the current editor content (AI get_code, run, check).
  */
 export interface GetCode {
   type: "getCode";
@@ -36,7 +67,7 @@ export interface CodeSnapshot {
   code: string;
 }
 /**
- * hub -> browser. The AI started a run of the current code.
+ * hub -> browser. The AI started a run of the editor content.
  */
 export interface RunStarted {
   type: "runStarted";
@@ -90,14 +121,62 @@ export interface Diagnostic {
   [k: string]: unknown;
 }
 /**
- * hub -> browser. Drives the AI connected indicator.
+ * hub -> browser. The AI started a check of the editor content.
+ */
+export interface CheckStarted {
+  type: "checkStarted";
+}
+/**
+ * hub -> browser. Result of the AI-started check, shown in the output panel.
+ */
+export interface CheckFinished {
+  type: "checkFinished";
+  result: CheckResult;
+}
+/**
+ * Result of goose check without running the program. Returned by the runner's POST /check, the MCP check tool, and sent to the browser in checkFinished.
+ */
+export interface CheckResult {
+  /**
+   * ok: the check passed (warnings may remain). compile_error: the check found errors. timeout: stopped at the time limit. killed: stopped by the memory or process limit.
+   */
+  outcome: "ok" | "compile_error" | "timeout" | "killed";
+  /**
+   * Errors and warnings from goose check --diagnostics json. Empty when there are none.
+   */
+  diagnostics: Diagnostic[];
+  /**
+   * Wall time inside the container.
+   */
+  durationMs: number;
+}
+/**
+ * hub -> browser. The AI called a tool with this session's token; drives the AI connected indicator.
  */
 export interface AiActivity {
   type: "aiActivity";
-  connected: boolean;
+  tool: "get_code" | "set_code" | "run" | "check";
 }
 /**
- * browser -> hub. Revoke the session token now.
+ * hub -> browser. An AI run or check that was announced with runStarted or checkStarted ended without a result.
+ */
+export interface ToolFailed {
+  type: "toolFailed";
+  tool: "run" | "check";
+  message: string;
+}
+/**
+ * hub -> browser, sent just before the hub closes the socket. The token no longer works.
+ */
+export interface SessionEnded {
+  type: "sessionEnded";
+  /**
+   * idle: no MCP call for idleSeconds. expired: reached expiresAt. full: the global session cap is reached. ip_limit / account_limit: this visitor already has the maximum sessions. turnstile_failed: the browser check failed. shutdown: the hub is restarting.
+   */
+  reason: "idle" | "expired" | "full" | "ip_limit" | "account_limit" | "turnstile_failed" | "shutdown";
+}
+/**
+ * browser -> hub. Revoke the token now.
  */
 export interface Disconnect {
   type: "disconnect";

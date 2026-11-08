@@ -57,19 +57,25 @@ sequenceDiagram
     participant B as Browser
     participant H as Hub
     participant AI as Claude / ChatGPT
-    B->>H: WebSocket connect → session token issued
+    B->>H: Connect AI: WebSocket, start(Turnstile token)
+    H->>H: Login cookie? ask the jace-s api (no renewal)
+    H->>B: hello(token, lifetime)
     Note over B: User copies the starter prompt (with token) into the AI
     AI->>H: MCP goose_docs / get_sample
     AI->>H: MCP set_code(token, code)
-    H->>B: Socket: set editor content
+    H->>B: Socket: setCode
     AI->>H: MCP run(token)
-    H->>H: Run through the runner
-    H->>B: Socket: show output
+    H->>B: Socket: getCode
+    B->>H: codeSnapshot (editor content)
+    H->>H: Run through the runner (MCP quota)
+    H->>B: Socket: runFinished
     H-->>AI: Same result
 ```
 
-- The token is bound to that tab's WebSocket. When the tab closes or the user presses Disconnect, the token stops working immediately.
+- The token is bound to that tab's WebSocket. When the tab closes or the user presses Disconnect, the token stops working immediately; it also ends after the idle or maximum time.
+- `run` and `check` run what is in the editor, read from the tab at call time.
 - Socket messages are a fixed allow-list. The browser does not execute code it receives.
+- Example: the AI calls `run` while the tab is in the background and does not answer within 5 s → the AI is told the tab did not answer → nothing runs and nothing is counted.
 
 ## Service State Transitions
 
