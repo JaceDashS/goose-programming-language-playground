@@ -1,0 +1,13 @@
+.git/
+.vercel/
+node_modules/
+**/node_modules/
+**/.next/
+tmp/
+scripts/debug/
+docs/.agent/
+**/*.private.*
+.env*
+**/.env*
+tmp/**
+**/*.tsbuildinfo
