@@ -13,7 +13,8 @@
 .bannerDegraded, .bannerOutage { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; }
 .bannerDegraded { background: var(--warn-bg); color: var(--warn-fg); }
 .bannerOutage { background: var(--err-bg); color: var(--err-fg); }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.toolbar { display: flex; flex-wrap: nowrap; overflow-x: auto; align-items: center; gap: 12px; }
+.toolbar > * { flex-shrink: 0; }
 .run, .share, .sampleSelect {
   min-height: 40px;
   font: inherit;
@@ -71,7 +72,7 @@
   .toolbar { gap: 8px; }
   .samplePicker { flex: 1 1 200px; }
   .selectWrap { flex: 1; width: auto; }
-  .shareMessage { flex-basis: 100%; }
+  .shareMessage { max-width: 240px; }
   .panes { grid-template-columns: 1fr; }
   .editor { min-height: 280px; }
   .hint { display: none; }
@@ -80,5 +81,6 @@
 /* Shown by Turnstile only when the visitor must interact with the check. */
 .turnstile {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  margin-left: auto;
 }

@@ -68,7 +68,7 @@
 
 - Input: Desktop and phone viewports, light and dark themes, Sample dropdown and Share button.
 - Steps: Inspect matching control heights, hover the controls, tab through their focus states, select 07_sieve and share the code.
-- Expected result: Both controls match the toolbar theme, dropdown text and chevron stay readable, keyboard focus is visible, the mobile toolbar wraps without horizontal overflow, sample selection and sharing keep working.
+- Expected result: Both controls match the toolbar theme, dropdown text and chevron stay readable, keyboard focus is visible, the mobile toolbar stays on one horizontally scrollable row, sample selection and sharing keep working.
 - Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
 
 ## Turnstile Tokens
@@ -98,3 +98,10 @@
 - Steps: Press Run on https://goose-playground.jace-s.com; POST without a token to `/api/run` and to `https://api.jace-s.com/goose/run`.
 - Expected result: The browser run succeeds; both tokenless requests return 403 `turnstile_failed`.
 - Verified 2026-11-09: browser run passed (checked by the user); both tokenless requests returned 403; hub health reported the runner up with two free slots.
+
+## Browser Check Toolbar Position
+
+- Input: A configured site key and visible Cloudflare interaction, on desktop and narrow screens.
+- Steps: Press Run and show the check.
+- Expected result: The check is right aligned in the Run toolbar without a separate page row; narrow toolbars scroll horizontally.
+- Design: [Turnstile Widget](../../../design/web/10-playground-page.md#turnstile-widget).

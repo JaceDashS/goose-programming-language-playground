@@ -163,9 +163,8 @@ export default function Playground() {
         <button className={styles.share} onClick={share}>Share</button>
         <span className={styles.shareMessage} role="status">{shareMessage}</span>
         <span className={styles.hint}>Ctrl+Enter</span>
+        {siteKey && <div ref={turnstileBox} className={styles.turnstile} />}
       </div>
-
-      {siteKey && <div ref={turnstileBox} className={styles.turnstile} />}
 
       <main className={styles.panes}>
         <section className={styles.editorPane} aria-label="Editor">

@@ -28,3 +28,10 @@
 - Input: The site key is built in, Turnstile is configured on the hub and the fallback, and the hub answers 503 `busy`.
 - Steps: The page gets token A for the hub, which verifies and spends it, then gets token B for `/api/run`.
 - Result: The fallback verifies token B and runs the code; the output shows "backup server".
+
+## Browser Check Position
+
+- The Cloudflare check is right aligned in the Run toolbar, without a separate row. Narrow toolbars scroll horizontally.
+- Input: Run is pressed and Cloudflare needs interaction.
+- Steps: Show the check at the right of the existing controls.
+- Expected result: The check stays in the Run row.

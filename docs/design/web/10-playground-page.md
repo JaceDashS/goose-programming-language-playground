@@ -22,6 +22,7 @@
 - Input: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` at build time, a container element, `window.turnstile` loaded from `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit`.
 - Output: `getToken()` resolving with a single-use token, or rejecting when the check fails or times out (60 s).
 - Code: `frontend/src/lib/turnstile.ts` → `turnstileSiteKey()`, `loadTurnstile()`, `createTurnstileWidget()`; `Playground.tsx` renders the container and passes `getToken` to `runGoose()`.
+- The container is the final item in the Run toolbar, right aligned with `margin-left: auto` and prevented from shrinking. It does not create a separate page row.
 - The widget is rendered once with `execution: "execute"` and `appearance: "interaction-only"`. Each `getToken()` resets and executes it; a newer request rejects the older pending one, and an old timer cannot cancel a newer request.
 - No site key → no script, no container, no token. The hub and the fallback skip verification while their `TURNSTILE_SECRET` is empty, so the order of rollout is page first, then secrets.
 - Scenario: Hub `busy` → `getToken()` is called again → the fallback receives a token the hub never saw.
@@ -54,7 +55,7 @@
 - Input: Existing theme variables, viewport width, keyboard focus and pointer interaction.
 - Output: Run, Sample and Share have a shared 40 px minimum height and matching rounded controls. Sample retains a native select with a decorative CSS chevron; Share uses a secondary outlined button. Both use the existing panel, text, border and accent variables in light and dark themes.
 - Code: frontend/src/components/Playground.tsx and frontend/src/components/Playground.module.css.
-- The toolbar wraps on small screens; the sample field can shrink and share feedback occupies its own mobile row. Empty feedback is hidden. Keyboard focus is outlined, and hover and pressed states use theme colors.
+- The toolbar stays on one horizontally scrollable row on small screens; the sample field can shrink and share feedback stays inline. Empty feedback is hidden. Keyboard focus is outlined, and hover and pressed states use theme colors.
 - Example input: A 375 px viewport with focus on Sample.
 - Example steps: Tab to Sample, choose a sample, then focus and activate Share.
 - Expected result: Visible focus, readable themed controls, no horizontal overflow and an unchanged share workflow.
