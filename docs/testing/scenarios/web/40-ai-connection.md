@@ -28,10 +28,11 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Expected result: Disconnect sends `disconnect`, closes the socket and returns to Connect AI; the ended connection shows "The AI connection ended because the AI made no calls for a while." with Connect again; a plain close shows that the connection was lost. In Edge, an MCP call with the disconnected token was refused with the "token is not valid" message.
 - Test: `AiPanel.test.tsx` → "disconnects on request and explains an ended session"; `agentSession.test.ts` → "ends with the hub's reason, or lost when the socket just closes", "disconnect revokes the token and returns to idle".
 
-### Browser Check Fails Before Start
-- Input: Turnstile is built in and cannot produce a token.
-- Expected result: No `start` is sent; the panel shows that the AI connection could not start.
-- Test: `agentSession.test.ts` → "ends with error when the browser check fails".
+### Browser Check Before The Socket
+- Input: Turnstile is built in; the check takes longer than 10 seconds, fails, or the user presses Disconnect while it is pending.
+- Steps: The token is requested before the socket opens; the socket opens only with a token in hand and sends `start` at once.
+- Expected result: A slow check still connects; a failed check shows that the AI connection could not start and opens no socket; Disconnect during the check opens no socket. Found in production on 2026-11-09: with the socket opened first, a check slower than 10 s let the hub close the socket after 10.003 s and the panel showed "connection lost".
+- Test: `agentSession.test.ts` → "gets the Turnstile token before opening the socket, then sends start and reports the session", "ends with error when the browser check fails", "opens no socket when Disconnect comes before the browser check finishes".
 
 ### Layout
 - Input: 1280 × 900 and 390 × 844 viewports, before and after Connect AI.

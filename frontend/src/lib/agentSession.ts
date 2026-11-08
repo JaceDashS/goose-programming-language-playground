@@ -136,26 +136,28 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
   };
   set(state);
 
-  const ws = new WS(url);
+  // The Turnstile token comes first: the hub closes a socket that sends no start within
+  // 10 seconds, and an interactive browser check can take longer than that.
+  let ws: WebSocket | null = null;
   const send = (m: SocketMessage) => {
-    if (ws.readyState === WS.OPEN) ws.send(JSON.stringify(m));
+    if (ws && ws.readyState === WS.OPEN) ws.send(JSON.stringify(m));
   };
-
-  ws.onopen = async () => {
-    let turnstileToken: string | undefined;
-    if (options.getToken) {
-      try {
-        turnstileToken = await options.getToken();
-      } catch {
-        end("error");
-        ws.close();
-        return;
-      }
-    }
-    send(turnstileToken ? { type: "start", turnstileToken } : { type: "start" });
+  const open = (turnstileToken: string | undefined) => {
+    if (finished) return;
+    const socket = new WS(url);
+    ws = socket;
+    socket.onopen = () => send(turnstileToken ? { type: "start", turnstileToken } : { type: "start" });
+    socket.onmessage = onMessage;
+    socket.onclose = () => end("lost");
+    socket.onerror = () => undefined; // onclose follows
   };
+  if (options.getToken) {
+    options.getToken().then(open, () => end("error"));
+  } else {
+    open(undefined);
+  }
 
-  ws.onmessage = (event: MessageEvent) => {
+  function onMessage(event: MessageEvent) {
     if (finished) return;
     const m = parseHubMessage(event.data);
     if (!m) return;
@@ -200,10 +202,7 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
         end(m.reason);
         break;
     }
-  };
-
-  ws.onclose = () => end("lost");
-  ws.onerror = () => undefined; // onclose follows
+  }
 
   return {
     disconnect() {
@@ -211,7 +210,7 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
       finished = true;
       unlock();
       send({ type: "disconnect" });
-      ws.close();
+      ws?.close();
       set({ status: "idle" });
     },
   };

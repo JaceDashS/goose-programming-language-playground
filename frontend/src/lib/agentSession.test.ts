@@ -75,9 +75,16 @@ describe("connectAgent", () => {
     }
   });
 
-  it("sends start with a Turnstile token and reports the session", async () => {
-    const { ws, states } = setup(async () => "tok");
+  it("gets the Turnstile token before opening the socket, then sends start and reports the session", async () => {
+    FakeSocket.last = null as unknown as FakeSocket;
+    let resolve!: (t: string) => void;
+    const { states } = setup(() => new Promise<string>((r) => { resolve = r; }));
     expect(states.at(-1)).toEqual({ status: "connecting" });
+    // No socket while the browser check is pending, so a slow check cannot hit the hub's start timeout.
+    expect(FakeSocket.last).toBeNull();
+    resolve("tok");
+    await flush();
+    const ws = FakeSocket.last;
     ws.open();
     await flush();
     expect(ws.sent).toEqual([{ type: "start", turnstileToken: "tok" }]);
@@ -152,11 +159,22 @@ describe("connectAgent", () => {
     expect(states.at(-1)).toEqual({ status: "idle" });
   });
 
-  it("ends with error when the browser check fails", async () => {
-    const { ws, states } = setup(async () => { throw new Error("no"); });
-    ws.open();
+  it("opens no socket when Disconnect comes before the browser check finishes", async () => {
+    FakeSocket.last = null as unknown as FakeSocket;
+    let resolve!: (t: string) => void;
+    const { conn, states } = setup(() => new Promise<string>((r) => { resolve = r; }));
+    conn.disconnect();
+    resolve("tok");
     await flush();
-    expect(ws.sent).toEqual([]);
+    expect(FakeSocket.last).toBeNull();
+    expect(states.at(-1)).toEqual({ status: "idle" });
+  });
+
+  it("ends with error when the browser check fails", async () => {
+    FakeSocket.last = null as unknown as FakeSocket;
+    const { states } = setup(async () => { throw new Error("no"); });
+    await flush();
+    expect(FakeSocket.last).toBeNull();
     expect(states.at(-1)).toEqual({ status: "ended", reason: "error" });
   });
 });

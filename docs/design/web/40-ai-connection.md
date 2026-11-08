@@ -24,7 +24,7 @@ stateDiagram-v2
 - Output: `AgentConnection` with `disconnect()`; states `idle`, `connecting`, `connected` (token, loggedIn, idleSeconds, expiresAt, last tool and time), `ended` (reason).
 - Code: `frontend/src/lib/agentSession.ts` → `connectAgent()`, `parseHubMessage()`, `starterPrompt()`, `END_MESSAGE`.
 - Steps:
-  1. Open the WebSocket; on open get a Turnstile token when configured (failure → `ended(error)`) and send `start`.
+  1. Get a Turnstile token when configured (failure → `ended(error)`), then open the WebSocket and send `start` on open. The token comes first because the hub closes a socket that sends no `start` within 10 seconds, and an interactive check can take longer. Disconnect while the check is pending opens no socket.
   2. `parseHubMessage` keeps only allow-listed hub messages with the right field types; everything else is dropped.
   3. `hello` → connected. `toolStarted` → synchronously request the page lock and reply `toolReady`; `setCode` → replace the editor while locked. `getCode` → send `codeSnapshot` with the current editor content while locked. `toolFinished` → release the matching lock. Started, finished and failed messages go to the output panel. `aiActivity` updates the last action.
   4. `sessionEnded` → ended with its reason; a close without it → ended `lost`. `disconnect()` sends `disconnect`, closes and returns to idle.
