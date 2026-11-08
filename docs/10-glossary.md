@@ -49,3 +49,8 @@
 ## Run Slot
 - Definition: One of the runner's concurrent run places (2 by default). When all are in use, the hub answers `busy` and the browser falls back.
 - Avoid: "worker" (Goose uses that word for its threads)
+
+## Sample
+- Definition: An unmodified Goose release program bundled as static editor text.
+- Code: frontend/src/samples/index.ts
+

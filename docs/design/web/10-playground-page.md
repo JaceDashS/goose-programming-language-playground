@@ -35,3 +35,4 @@
 - Code: `frontend/src/app/api/run/route.ts`. Currently a stub that answers 503 `unavailable`.
 - Spec for the implementation: [Vercel Fallback](../../specs/run/30-vercel-fallback.md).
 
+`Playground.tsx` also loads static release samples through the [Samples Design](20-samples.md).

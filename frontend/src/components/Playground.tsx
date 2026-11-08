@@ -5,6 +5,7 @@ import type { Health, ServiceState } from "@/lib/contract";
 import { runGoose, type RunOutcome } from "@/lib/runGoose";
 import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/serviceState";
 import { endpoints } from "@/lib/endpoints";
+import { samples } from "@/samples";
 import OutputPanel from "./OutputPanel";
 import styles from "./Playground.module.css";
 
@@ -20,6 +21,7 @@ export default function Playground() {
   const [health, setHealth] = useState<Health | null>(null);
   const [state, setState] = useState<ServiceState>("normal");
   const fallbackDown = useRef(false);
+  const loadedCode = useRef(HELLO);
 
   // Recheck the hub's health on a schedule that backs off while not normal.
   useEffect(() => {
@@ -88,6 +90,19 @@ export default function Playground() {
         >
           {running ? "Running…" : "Run"}
         </button>
+        <label>
+          Sample{" "}
+          <select aria-label="Sample" value="" onChange={(e) => {
+            const sample = samples.find((s) => s.name === e.target.value);
+            if (!sample) return;
+            if (code !== loadedCode.current && !window.confirm("Replace your code with the sample?")) return;
+            loadedCode.current = sample.code;
+            setCode(sample.code);
+          }}>
+            <option value="" disabled>Choose a sample</option>
+            {samples.map((sample) => <option key={sample.name} value={sample.name}>{sample.name}</option>)}
+          </select>
+        </label>
         <span className={styles.hint}>Ctrl+Enter</span>
       </div>
 

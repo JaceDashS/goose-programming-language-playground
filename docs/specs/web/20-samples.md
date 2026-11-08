@@ -16,3 +16,6 @@
 - Input: The user has edited the hello program and picks `07_sieve`.
 - Steps: The page asks "Replace your code with the sample?" → the user confirms.
 - Result: The editor shows `07_sieve.goose`; Run prints `664579 primes up to 10000000`.
+
+- Design: [Samples Design](../../design/web/20-samples.md)
+- Scenarios: [Samples Scenarios](../../testing/scenarios/web/20-samples.md)
