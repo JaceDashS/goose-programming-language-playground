@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Health, ServiceState } from "@/lib/contract";
 import { runGoose } from "@/lib/runGoose";
-import { connectAgent, type AgentConnection, type AgentState } from "@/lib/agentSession";
+import { connectAgent, type AgentConnection, type AgentState, type AgentTool } from "@/lib/agentSession";
 import { createAccountClient, type AccountUser } from "@/lib/account";
 import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/serviceState";
 import { endpoints } from "@/lib/endpoints";
@@ -27,6 +27,10 @@ export default function Playground() {
   const [running, setRunning] = useState(false);
   const [outcome, setOutcome] = useState<PanelOutcome | null>(null);
   const [aiBusy, setAiBusy] = useState<string | null>(null);
+  const [aiLock, setAiLock] = useState<AgentTool | null>(null);
+  const aiLockRef = useRef<AgentTool | null>(null);
+  const browserRunning = useRef(false);
+  const [aiNotice, setAiNotice] = useState("");
   const [byAI, setByAI] = useState(false);
   const [agent, setAgent] = useState<AgentState>({ status: "idle" });
   const connection = useRef<AgentConnection | null>(null);
@@ -71,7 +75,7 @@ export default function Playground() {
   useEffect(() => {
     let cancelled = false;
     decodeShare(window.location.hash).then(shared => {
-      if (!cancelled && !edited.current && shared !== null) {
+      if (!cancelled && !edited.current && !aiLockRef.current && shared !== null) {
         loadedCode.current = shared;
         setCode(shared);
       }
@@ -130,6 +134,8 @@ export default function Playground() {
   }, []);
 
   const run = useCallback(async () => {
+    if (aiLockRef.current || browserRunning.current) return;
+    browserRunning.current = true;
     setRunning(true);
     try {
       const out = await runGoose(code, endpoints, { getToken: siteKey ? getToken : undefined });
@@ -138,6 +144,7 @@ export default function Playground() {
       setByAI(false);
       setOutcome(out);
     } finally {
+      browserRunning.current = false;
       setRunning(false);
     }
   }, [code, siteKey, getToken]);
@@ -145,6 +152,17 @@ export default function Playground() {
   const connectAI = () => {
     connection.current?.disconnect();
     connection.current = connectAgent(endpoints.session, {
+      onLock: (tool) => {
+        if (browserRunning.current) {
+          setAiNotice("The user is running code in the playground. Wait for that run to finish before trying again.");
+          return false;
+        }
+        aiLockRef.current = tool;
+        setAiLock(tool);
+        setAiNotice("");
+        return true;
+      },
+      onUnlock: () => { aiLockRef.current = null; setAiLock(null); setAiBusy(null); },
       getCode: () => codeRef.current,
       setCode: (next) => {
         edited.current = true;
@@ -154,7 +172,7 @@ export default function Playground() {
       onStarted: (tool) => setAiBusy(tool === "run" ? "AI is running the code…" : "AI is checking the code…"),
       onRunFinished: (result) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "result", result, state: "normal" }); },
       onCheckFinished: (result) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "check", result }); },
-      onToolFailed: (_tool, message) => { setAiBusy(null); setByAI(true); setOutcome({ kind: "error", code: "busy", message, state: "normal" }); },
+      onToolFailed: (_tool, message) => { setAiNotice(message); },
       onState: (next) => {
         setAgent(next);
         if (next.status === "ended" || next.status === "idle") setAiBusy(null);
@@ -177,7 +195,7 @@ export default function Playground() {
   };
 
   const banner = BANNER[state];
-  const canRun = state !== "outage" && !running;
+  const canRun = state !== "outage" && !running && aiLock === null;
 
   return (
     <div className={styles.shell}>
@@ -223,7 +241,8 @@ export default function Playground() {
         <label className={styles.samplePicker}>
           <span>Sample</span>
           <span className={styles.selectWrap}>
-            <select className={styles.sampleSelect} aria-label="Sample" value="" onChange={(e) => {
+            <select className={styles.sampleSelect} aria-label="Sample" value="" disabled={aiLock !== null} onChange={(e) => {
+              if (aiLockRef.current) return;
               const sample = samples.find((s) => s.name === e.target.value);
               if (!sample) return;
               if (code !== loadedCode.current && !window.confirm("Replace your code with the sample?")) return;
@@ -242,12 +261,17 @@ export default function Playground() {
         {siteKey && <div ref={turnstileBox} className={styles.turnstile} />}
       </div>
 
+      {aiLock && <p id="ai-lock-reason" role="status" className={styles.warning}>AI is using the editor. Editing, sample replacement and Run are paused until this call finishes.</p>}
+      {aiNotice && <p role="status" className={styles.warning}>{aiNotice}</p>}
+
       <main className={styles.panes}>
         <section className={styles.editorPane} aria-label="Editor">
           <textarea
             className={styles.editor}
             value={code}
-            onChange={(e) => { edited.current = true; setCode(e.target.value); }}
+            readOnly={aiLock !== null}
+            aria-describedby={aiLock ? "ai-lock-reason" : undefined}
+            onChange={(e) => { if (aiLockRef.current) return; edited.current = true; codeRef.current = e.target.value; setCode(e.target.value); }}
             onKeyDown={(e) => {
               if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && canRun) {
                 e.preventDefault();

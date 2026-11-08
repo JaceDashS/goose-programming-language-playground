@@ -30,3 +30,14 @@ Edit the code in my editor; do not paste code into the chat.
 - Input: The user presses Connect AI, copies the starter prompt into Claude Code and asks for the first three squares.
 - Steps: The AI calls `set_code`, `check` and `run` with the token.
 - Result: The editor shows the AI's program, the output panel shows "AI · Exited with code 0" and `1 4 9`, and the panel says "AI connected: ran the code at 01:28".
+
+## Per Call Editing Lock
+
+- Lock manual editing, sample selection and Run including keyboard shortcuts only during an individual AI get_code, set_code, run or check operation. Show a visible reason, including at narrow widths.
+- Acknowledge toolStarted only after synchronously guarding manual editing and execution. Refuse when a browser run is already in progress.
+- Unlock on matching toolFinished, sessionEnded, socket loss or Disconnect. An unrelated failure or stale finish must not unlock an active call.
+- Show every toolFailed reason independently of active output, including quota failures before execution and refused writes. The hub returns the same reason to the AI.
+- Ignore editor read or replacement messages outside a tool lock. Do not load shared URL code over an active AI operation.
+- Example input: AI runs while the user tries to select a sample or press Ctrl+Enter.
+- Example steps: Disable sample and Run controls and make the editor read-only; finish the AI call.
+- Expected result: No browser run or code replacement until the matching completion; controls become available afterward.

@@ -22,6 +22,8 @@ function setup(getToken?: () => Promise<string>) {
   let editor = "fn main() {}";
   const states: AgentState[] = [];
   const handlers: AgentHandlers = {
+    onLock: vi.fn(() => true),
+    onUnlock: vi.fn(),
     getCode: () => editor,
     setCode: vi.fn((c: string) => { editor = c; }),
     onStarted: vi.fn(),
@@ -42,6 +44,37 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
 const hello = { type: "hello", sessionToken: "a".repeat(64), loggedIn: false, idleSeconds: 1800, expiresAt: "2026-11-09T03:00:00Z" };
 
 describe("connectAgent", () => {
+  it("acknowledges one lock and ignores unrelated failures and stale unlocks", async () => {
+    const { ws, handlers } = setup();
+    ws.open(); await flush(); ws.hub(hello);
+    ws.hub({ type: "toolStarted", requestId: "t1", tool: "run" });
+    expect(ws.sent.at(-1)).toEqual({ type: "toolReady", requestId: "t1", accepted: true });
+    ws.hub({ type: "toolStarted", requestId: "t2", tool: "set_code" });
+    expect(ws.sent.at(-1)).toEqual({ type: "toolReady", requestId: "t2", accepted: false });
+    ws.hub({ type: "toolFailed", tool: "set_code", errorCode: "busy", message: "Wait for the active call." });
+    ws.hub({ type: "toolFinished", requestId: "t2" });
+    expect(handlers.onUnlock).not.toHaveBeenCalled();
+    ws.hub({ type: "toolFinished", requestId: "t1" });
+    expect(handlers.onUnlock).toHaveBeenCalledOnce();
+    ws.hub({ type: "setCode", code: "unsolicited" });
+    expect(handlers.setCode).not.toHaveBeenCalled();
+  });
+
+  it("rejects the lock when the browser is busy and releases accepted locks on connection end", async () => {
+    for (const mode of ["close", "disconnect", "sessionEnded"]) {
+      const { ws, handlers, conn } = setup();
+      ws.open(); await flush(); ws.hub(hello);
+      vi.mocked(handlers.onLock).mockReturnValueOnce(false);
+      ws.hub({ type: "toolStarted", requestId: "t1", tool: "set_code" });
+      expect(ws.sent.at(-1)).toEqual({ type: "toolReady", requestId: "t1", accepted: false });
+      ws.hub({ type: "toolStarted", requestId: "t2", tool: "check" });
+      if (mode === "close") ws.onclose?.();
+      if (mode === "disconnect") conn.disconnect();
+      if (mode === "sessionEnded") ws.hub({ type: "sessionEnded", reason: "shutdown" });
+      expect(handlers.onUnlock).toHaveBeenCalledOnce();
+    }
+  });
+
   it("sends start with a Turnstile token and reports the session", async () => {
     const { ws, states } = setup(async () => "tok");
     expect(states.at(-1)).toEqual({ status: "connecting" });
@@ -57,8 +90,11 @@ describe("connectAgent", () => {
     ws.open();
     await flush();
     ws.hub(hello);
+    ws.hub({ type: "toolStarted", requestId: "t1", tool: "set_code" });
     ws.hub({ type: "setCode", code: "fn main() { print(2); }" });
     expect(editor()).toBe("fn main() { print(2); }");
+    ws.hub({ type: "toolFinished", requestId: "t1" });
+    ws.hub({ type: "toolStarted", requestId: "t2", tool: "run" });
     ws.hub({ type: "getCode", requestId: "r1" });
     expect(ws.sent.at(-1)).toEqual({ type: "codeSnapshot", requestId: "r1", code: "fn main() { print(2); }" });
     ws.hub({ type: "runStarted" });
@@ -67,7 +103,7 @@ describe("connectAgent", () => {
     ws.hub({ type: "runFinished", result });
     expect(handlers.onRunFinished).toHaveBeenCalledWith(result);
     ws.hub({ type: "toolFailed", tool: "check", message: "busy" });
-    expect(handlers.onToolFailed).toHaveBeenCalledWith("check", "busy");
+    expect(handlers.onToolFailed).toHaveBeenCalledWith("check", "busy", undefined);
   });
 
   it("records AI activity", async () => {

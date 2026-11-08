@@ -61,3 +61,7 @@
 - Example steps: Tab to Sample, choose a sample, then focus and activate Share.
 - Expected result: Visible focus, readable themed controls, no horizontal overflow and an unchanged share workflow.
 - Scenarios: [Playground Page Scenarios](../../testing/scenarios/web/10-playground-page.md#toolbar-theme-and-responsive-layout).
+
+## AI Tool Ownership
+
+AI calls temporarily make the editor read-only and disable sample selection and Run, including keyboard execution. A visible reason and a separate failure notice explain ownership and refusals. See [AI Connection Design](40-ai-connection.md#lock-and-refusal-handling).

@@ -89,3 +89,20 @@ stateDiagram-v2
 ```
 
 The browser rechecks the hub health endpoint and the socket connection with backoff and switches state automatically.
+
+## Tool Call Ownership
+
+Every session tool first sends toolStarted; the tab locks manual editing and execution and replies toolReady. After a result or failure, matching toolFinished releases the lock. A browser run already in progress refuses the acknowledgement. Closing the connection releases the local lock. See [AI Connection Design](../design/web/40-ai-connection.md#lock-and-refusal-handling).
+
+```mermaid
+sequenceDiagram
+    participant AI
+    participant H as Hub
+    participant B as Browser
+    AI->>H: Session tool
+    H->>B: toolStarted with ID
+    B->>H: toolReady accepted
+    H->>B: Code action or execution result
+    H->>B: toolFinished with ID
+    H-->>AI: Result or shared refusal reason
+```

@@ -26,6 +26,10 @@ export type AgentState =
   | { status: "ended"; reason: EndReason };
 
 export interface AgentHandlers {
+  /** Synchronously lock editing and execution, or refuse while a browser run is active. */
+  onLock(tool: AgentTool): boolean;
+  /** Release the active tool lock. Also called when the connection ends. */
+  onUnlock(): void;
   /** Current editor content, sent when the AI reads the code or runs it. */
   getCode(): string;
   /** Replace the editor content (AI set_code). */
@@ -33,7 +37,7 @@ export interface AgentHandlers {
   onStarted(tool: "run" | "check"): void;
   onRunFinished(result: RunResult): void;
   onCheckFinished(result: CheckResult): void;
-  onToolFailed(tool: "run" | "check", message: string): void;
+  onToolFailed(tool: AgentTool, message: string, errorCode?: string): void;
   onState(state: AgentState): void;
 }
 
@@ -86,6 +90,10 @@ export function parseHubMessage(raw: unknown): SocketMessage | null {
       return str("code") ? (m as unknown as SocketMessage) : null;
     case "getCode":
       return str("requestId") ? (m as unknown as SocketMessage) : null;
+    case "toolStarted":
+      return str("requestId") && typeof m.tool === "string" && TOOLS.has(m.tool) ? (m as unknown as SocketMessage) : null;
+    case "toolFinished":
+      return str("requestId") ? (m as unknown as SocketMessage) : null;
     case "runFinished":
     case "checkFinished":
       return obj("result") ? (m as unknown as SocketMessage) : null;
@@ -93,7 +101,8 @@ export function parseHubMessage(raw: unknown): SocketMessage | null {
     case "checkStarted":
       return { type: m.type } as SocketMessage;
     case "toolFailed":
-      return (m.tool === "run" || m.tool === "check") && str("message") ? (m as unknown as SocketMessage) : null;
+      return typeof m.tool === "string" && TOOLS.has(m.tool) && str("message") &&
+        (m.errorCode === undefined || typeof m.errorCode === "string") ? (m as unknown as SocketMessage) : null;
     case "aiActivity":
       return typeof m.tool === "string" && TOOLS.has(m.tool) ? (m as unknown as SocketMessage) : null;
     case "sessionEnded":
@@ -109,6 +118,12 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
   const now = options.now ?? (() => new Date());
   let state: AgentState = { status: "connecting" };
   let finished = false;
+  let lockId: string | null = null;
+  const unlock = () => {
+    if (lockId === null) return;
+    lockId = null;
+    handlers.onUnlock();
+  };
   const set = (next: AgentState) => {
     state = next;
     handlers.onState(next);
@@ -116,6 +131,7 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
   const end = (reason: EndReason) => {
     if (finished) return;
     finished = true;
+    unlock();
     set({ status: "ended", reason });
   };
   set(state);
@@ -144,14 +160,23 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
     const m = parseHubMessage(event.data);
     if (!m) return;
     switch (m.type) {
+      case "toolStarted": {
+        const accepted = lockId === null && handlers.onLock(m.tool);
+        if (accepted) lockId = m.requestId;
+        send({ type: "toolReady", requestId: m.requestId, accepted });
+        break;
+      }
+      case "toolFinished":
+        if (m.requestId === lockId) unlock();
+        break;
       case "hello":
         set({ status: "connected", token: m.sessionToken, loggedIn: m.loggedIn, idleSeconds: m.idleSeconds, expiresAt: new Date(m.expiresAt) });
         break;
       case "setCode":
-        handlers.setCode(m.code);
+        if (lockId !== null) handlers.setCode(m.code);
         break;
       case "getCode":
-        send({ type: "codeSnapshot", requestId: m.requestId, code: handlers.getCode() });
+        if (lockId !== null) send({ type: "codeSnapshot", requestId: m.requestId, code: handlers.getCode() });
         break;
       case "runStarted":
         handlers.onStarted("run");
@@ -166,7 +191,7 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
         handlers.onCheckFinished(m.result);
         break;
       case "toolFailed":
-        handlers.onToolFailed(m.tool, m.message);
+        handlers.onToolFailed(m.tool, m.message, m.errorCode);
         break;
       case "aiActivity":
         if (state.status === "connected") set({ ...state, lastTool: m.tool, lastActivity: now() });
@@ -184,6 +209,7 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
     disconnect() {
       if (finished) return;
       finished = true;
+      unlock();
       send({ type: "disconnect" });
       ws.close();
       set({ status: "idle" });

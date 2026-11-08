@@ -65,3 +65,9 @@
 - Definition: A single-use proof from Cloudflare Turnstile that a run request came from a real browser. The hub and the fallback verify it only when their `TURNSTILE_SECRET` is set.
 - Code: `frontend/src/lib/turnstile.ts`, `RunRequest.turnstileToken`.
 - Example: After the hub spends a token and answers `busy`, the page gets a new token for `/api/run`.
+
+## Tool Lock
+- Definition: Temporary exclusive ownership of one tab's editing and execution controls for one AI session tool call, acknowledged by that tab.
+- Code: `toolStarted`, `toolReady`, `toolFinished` in the session socket contract.
+- Related: [Session Socket](api/20-socket.md).
+- Example: An AI run locks the editor until its matching completion; a parallel refused call does not unlock it.

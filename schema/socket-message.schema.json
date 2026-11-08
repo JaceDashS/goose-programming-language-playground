@@ -16,7 +16,10 @@
     { "$ref": "#/$defs/aiActivity" },
     { "$ref": "#/$defs/toolFailed" },
     { "$ref": "#/$defs/sessionEnded" },
-    { "$ref": "#/$defs/disconnect" }
+    { "$ref": "#/$defs/disconnect" },
+    { "$ref": "#/$defs/toolStarted" },
+    { "$ref": "#/$defs/toolReady" },
+    { "$ref": "#/$defs/toolFinished" }
   ],
   "$defs": {
     "start": {
@@ -76,9 +79,9 @@
       "properties": { "type": { "const": "aiActivity" }, "tool": { "type": "string", "enum": ["get_code", "set_code", "run", "check"] } }
     },
     "toolFailed": {
-      "description": "hub -> browser. An AI run or check that was announced with runStarted or checkStarted ended without a result.",
+      "description": "hub -> browser. Explain any refused or failed session tool, even before execution. Does not release another active tool lock.",
       "type": "object", "additionalProperties": false, "required": ["type", "tool", "message"],
-      "properties": { "type": { "const": "toolFailed" }, "tool": { "type": "string", "enum": ["run", "check"] }, "message": { "type": "string", "maxLength": 500 } }
+      "properties": { "type": { "const": "toolFailed" }, "tool": { "type": "string", "enum": ["get_code", "set_code", "run", "check"] }, "message": { "type": "string", "maxLength": 500 }, "errorCode": { "type": "string", "enum": ["busy", "rate_limited", "invalid_request", "unavailable"] }, "retryAfterSeconds": { "type": "integer", "minimum": 1 } }
     },
     "sessionEnded": {
       "description": "hub -> browser, sent just before the hub closes the socket. The token no longer works.",
@@ -97,6 +100,78 @@
       "type": "object", "additionalProperties": false, "required": ["type"],
       "properties": { "type": { "const": "disconnect" } }
     }
+,
+    "toolStarted": {
+      "description": "hub -> browser. Lock manual editing and execution for one tool call before acknowledging.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "requestId",
+        "tool"
+      ],
+      "properties": {
+        "type": {
+          "const": "toolStarted"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "tool": {
+          "type": "string",
+          "enum": [
+            "get_code",
+            "set_code",
+            "run",
+            "check"
+          ]
+        }
+      }
+    },
+    "toolReady": {
+      "description": "browser -> hub. Acknowledge the lock, or refuse while a browser run owns the tab.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "requestId",
+        "accepted"
+      ],
+      "properties": {
+        "type": {
+          "const": "toolReady"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "accepted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "toolFinished": {
+      "description": "hub -> browser. Release only the matching tool lock, including after failure or timeout.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "requestId"
+      ],
+      "properties": {
+        "type": {
+          "const": "toolFinished"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    }
   },
   "examples": [
     { "type": "start", "turnstileToken": "0.abc" },
@@ -111,6 +186,12 @@
     { "type": "aiActivity", "tool": "set_code" },
     { "type": "toolFailed", "tool": "run", "message": "The server is busy, so the AI connection (MCP) cannot run code right now." },
     { "type": "sessionEnded", "reason": "idle" },
-    { "type": "disconnect" }
+    { "type": "disconnect" },
+    {"type": "toolStarted", "requestId": "t1", "tool": "run"},
+    {"type": "toolReady", "requestId": "t1", "accepted": true},
+    {"type": "toolReady", "requestId": "t1", "accepted": false},
+    {"type": "toolFinished", "requestId": "t1"},
+    {"type": "toolFailed", "tool": "set_code", "errorCode": "busy", "message": "The user is running code in the playground."},
+    {"type": "toolFailed", "tool": "run", "errorCode": "rate_limited", "retryAfterSeconds": 40, "message": "Try again in 40 seconds."}
   ]
 }

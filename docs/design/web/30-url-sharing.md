@@ -25,3 +25,7 @@ flowchart LR
 ## Toolbar Appearance
 
 The Share button uses the themed secondary share class; shareMessage styles the status feedback and hides it when empty. See [Toolbar Controls](10-playground-page.md#toolbar-controls).
+
+## AI Ownership
+
+Sharing the current code remains available during an AI call. Asynchronous restoration of shared URL code is skipped if the editor is locked when decoding finishes, so it cannot replace an AI-owned snapshot. See [AI Connection Design](40-ai-connection.md#lock-and-refusal-handling).

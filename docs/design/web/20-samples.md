@@ -25,3 +25,7 @@ flowchart LR
 ## Toolbar Appearance
 
 The native sample picker is wrapped by samplePicker and selectWrap and uses sampleSelect. Its CSS chevron is decorative and does not intercept pointer input. See [Toolbar Controls](10-playground-page.md#toolbar-controls).
+
+## AI Ownership
+
+Sample replacement is disabled while an individual AI tool owns the editor; both the select element and its change handler enforce it. See [AI Connection Design](40-ai-connection.md#lock-and-refusal-handling).

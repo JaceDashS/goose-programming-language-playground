@@ -16,7 +16,10 @@ export type SocketMessage =
   | AiActivity
   | ToolFailed
   | SessionEnded
-  | Disconnect;
+  | Disconnect
+  | ToolStarted
+  | ToolReady
+  | ToolFinished;
 
 /**
  * browser -> hub, the first message after connect. Carries a fresh Turnstile token when Turnstile is on.
@@ -158,12 +161,14 @@ export interface AiActivity {
   tool: "get_code" | "set_code" | "run" | "check";
 }
 /**
- * hub -> browser. An AI run or check that was announced with runStarted or checkStarted ended without a result.
+ * hub -> browser. Explain any refused or failed session tool, even before execution. Does not release another active tool lock.
  */
 export interface ToolFailed {
   type: "toolFailed";
-  tool: "run" | "check";
+  tool: "get_code" | "set_code" | "run" | "check";
   message: string;
+  errorCode?: "busy" | "rate_limited" | "invalid_request" | "unavailable";
+  retryAfterSeconds?: number;
 }
 /**
  * hub -> browser, sent just before the hub closes the socket. The token no longer works.
@@ -180,4 +185,27 @@ export interface SessionEnded {
  */
 export interface Disconnect {
   type: "disconnect";
+}
+/**
+ * hub -> browser. Lock manual editing and execution for one tool call before acknowledging.
+ */
+export interface ToolStarted {
+  type: "toolStarted";
+  requestId: string;
+  tool: "get_code" | "set_code" | "run" | "check";
+}
+/**
+ * browser -> hub. Acknowledge the lock, or refuse while a browser run owns the tab.
+ */
+export interface ToolReady {
+  type: "toolReady";
+  requestId: string;
+  accepted: boolean;
+}
+/**
+ * hub -> browser. Release only the matching tool lock, including after failure or timeout.
+ */
+export interface ToolFinished {
+  type: "toolFinished";
+  requestId: string;
 }

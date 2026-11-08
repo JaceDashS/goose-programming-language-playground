@@ -74,15 +74,20 @@ it("lets the AI replace and read the editor and shows its run", async () => {
   render(<Playground />);
   const ws = await connect();
   ws.hub({ type: "aiActivity", tool: "set_code" });
+  ws.hub({ type: "toolStarted", requestId: "t1", tool: "set_code" });
   ws.hub({ type: "setCode", code: "fn main() { print(2); }" });
   expect((screen.getByRole("textbox", { name: "" }) as HTMLTextAreaElement).value).toBe("fn main() { print(2); }");
   expect(screen.getByText(/AI connected: changed the code/)).toBeTruthy();
+  ws.hub({ type: "toolFinished", requestId: "t1" });
+  ws.hub({ type: "toolStarted", requestId: "t2", tool: "run" });
   ws.hub({ type: "getCode", requestId: "r1" });
   expect(ws.sent.at(-1)).toEqual({ type: "codeSnapshot", requestId: "r1", code: "fn main() { print(2); }" });
   ws.hub({ type: "runStarted" });
   expect(screen.getByText("AI is running the code…")).toBeTruthy();
   ws.hub({ type: "runFinished", result: { outcome: "exited", exitCode: 0, stdout: "2\n", stderr: "", diagnostics: [], truncated: false, durationMs: 5, backend: "onprem" } });
   expect(screen.getByText(/AI · Exited with code 0/)).toBeTruthy();
+  ws.hub({ type: "toolFinished", requestId: "t2" });
+  ws.hub({ type: "toolStarted", requestId: "t3", tool: "check" });
   ws.hub({ type: "checkFinished", result: { outcome: "compile_error", diagnostics: [{ severity: "error", message: "expression expected", line: 1, col: 23 }], durationMs: 4 } });
   expect(screen.getByText(/AI · Compile error/)).toBeTruthy();
   expect(screen.getByText(/line 1:23: expression expected/)).toBeTruthy();
@@ -117,6 +122,72 @@ it("logs in from the header and shows the account", async () => {
   const login = f.mock.calls.find(([url]) => String(url).endsWith("/auth/login")) as unknown as [string, RequestInit];
   expect(login[1].credentials).toBe("include");
   expect(screen.getByText(/a connection lasts up to 8 hours/)).toBeTruthy();
+});
+
+it("locks editing, sample replacement and mouse or keyboard runs only for the active AI call", async () => {
+  const f = stubFetch();
+  render(<Playground />);
+  const ws = await connect();
+  const editor = screen.getByRole("textbox", { name: "" }) as HTMLTextAreaElement;
+  const run = screen.getByRole("button", { name: "Run" }) as HTMLButtonElement;
+  const picker = screen.getByLabelText("Sample") as HTMLSelectElement;
+  expect(editor.readOnly).toBe(false);
+  ws.hub({ type: "toolStarted", requestId: "t1", tool: "run" });
+  expect(editor.readOnly).toBe(true);
+  expect(run.disabled).toBe(true);
+  expect(picker.disabled).toBe(true);
+  const original = editor.value;
+  fireEvent.change(editor, { target: { value: "manual edit" } });
+  fireEvent.change(picker, { target: { value: "07_sieve" } });
+  fireEvent.click(run);
+  fireEvent.keyDown(editor, { key: "Enter", ctrlKey: true });
+  expect(editor.value).toBe(original);
+  expect(f.mock.calls.some(([url]) => url.endsWith("/goose/run"))).toBe(false);
+  ws.hub({ type: "toolFailed", tool: "set_code", errorCode: "busy", message: "Another AI tool is using this editor." });
+  expect(screen.getByText("Another AI tool is using this editor.")).toBeTruthy();
+  ws.hub({ type: "toolFinished", requestId: "other" });
+  expect(editor.readOnly).toBe(true);
+  ws.hub({ type: "toolFinished", requestId: "t1" });
+  expect(editor.readOnly).toBe(false);
+  expect(run.disabled).toBe(false);
+  expect(picker.disabled).toBe(false);
+  fireEvent.change(editor, { target: { value: "manual edit" } });
+  expect(editor.value).toBe("manual edit");
+});
+
+it("shows pre-execution quota failures and unlocks on failure cleanup or disconnection", async () => {
+  stubFetch(); render(<Playground />);
+  const ws = await connect();
+  const editor = screen.getByRole("textbox", { name: "" }) as HTMLTextAreaElement;
+  ws.hub({ type: "toolStarted", requestId: "t1", tool: "check" });
+  ws.hub({ type: "toolFailed", tool: "check", errorCode: "rate_limited", message: "Try again in 40 seconds." });
+  expect(screen.getByText("Try again in 40 seconds.")).toBeTruthy();
+  ws.hub({ type: "toolFinished", requestId: "t1" });
+  expect(editor.readOnly).toBe(false);
+  ws.hub({ type: "toolStarted", requestId: "t2", tool: "get_code" });
+  act(() => ws.onclose?.());
+  expect(editor.readOnly).toBe(false);
+  expect((screen.getByRole("button", { name: "Run" }) as HTMLButtonElement).disabled).toBe(false);
+});
+
+it("refuses AI edits during a browser run without replacing that run's output", async () => {
+  let finishRun!: (response: Response) => void;
+  const f = stubFetch();
+  const defaultFetch = f.getMockImplementation()!;
+  f.mockImplementation((url, init) => url.endsWith("/goose/run")
+    ? new Promise<Response>((resolve) => { finishRun = resolve; }) : defaultFetch(url, init));
+  render(<Playground />);
+  const ws = await connect();
+  fireEvent.click(screen.getByRole("button", { name: "Run" }));
+  ws.hub({ type: "toolStarted", requestId: "t1", tool: "set_code" });
+  expect(ws.sent.at(-1)).toEqual({ type: "toolReady", requestId: "t1", accepted: false });
+  expect(screen.getByText(/The user is running code/)).toBeTruthy();
+  ws.hub({ type: "toolFinished", requestId: "t1" });
+  ws.hub({ type: "toolFailed", tool: "set_code", errorCode: "busy", message: "The user is running code in the playground. Wait for that run to finish before trying again." });
+  await waitFor(() => expect(typeof finishRun).toBe("function"));
+  await act(async () => finishRun(Response.json({ outcome: "exited", exitCode: 0, stdout: "browser result", stderr: "", diagnostics: [], truncated: false, durationMs: 5, backend: "onprem" })));
+  expect(screen.getByText("browser result")).toBeTruthy();
+  expect(screen.getByText(/Exited with code 0/).textContent).not.toContain("AI ·");
 });
 
 it("shows the signed-in account on load", async () => {

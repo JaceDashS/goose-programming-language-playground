@@ -1,4 +1,4 @@
-# AI Connection Scenarios
+# AI Connection Test Cases
 
 ## AI Connection Scenarios
 
@@ -13,8 +13,8 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Test: `frontend/src/components/AiPanel.test.tsx` → "opens no socket until Connect AI, then shows the starter prompt with the token"; `agentSession.test.ts` → "sends start with a Turnstile token and reports the session".
 
 ### AI Edits Reads And Runs
-- Input: Hub messages `aiActivity(set_code)`, `setCode`, `getCode`, `runStarted`, `runFinished`, `checkFinished` with a diagnostic at 1:23.
-- Steps: The editor is replaced; `codeSnapshot` returns the new content; the output panel shows the AI's progress and results.
+- Input: Hub messages `aiActivity(set_code)`, `toolStarted`, `setCode`, `getCode`, `runStarted`, `runFinished`, `checkFinished` with a diagnostic at 1:23.
+- Steps: Acknowledge the per-call lock before replacement or reading; the editor is replaced; `codeSnapshot` returns the new content; the output panel shows the AI's progress and results; matching completion unlocks.
 - Expected result: "AI connected: changed the code", "AI is running the code…", "AI · Exited with code 0", then "AI · Compile error" with "line 1:23: expression expected". Checked in Edge on 2026-11-09 against a local hub, runner and run image with an MCP client acting as the AI: the editor showed the AI's program and the output `1 4 9`.
 - Test: `AiPanel.test.tsx` → "lets the AI replace and read the editor and shows its run"; `agentSession.test.ts` → "applies setCode, answers getCode with the editor and shows results".
 
@@ -36,3 +36,21 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 ### Layout
 - Input: 1280 × 900 and 390 × 844 viewports, before and after Connect AI.
 - Expected result: The editor panes take the spare height; the AI panel keeps its own height; on the phone width the status and lifetime hints stay visible. Checked with Edge screenshots on 2026-11-09.
+
+### Manual Controls During AI Calls
+- Input: A locked AI run, manual edits, sample selection, mouse Run and Ctrl+Enter.
+- Steps: Try each control; deliver a refusal for a different AI call and a stale finish; finish the owning call.
+- Expected result: No manual mutation or browser execution; explanation stays visible; unrelated events retain the lock; all controls work after the matching finish.
+- Test: `AiPanel.test.tsx` → "locks editing, sample replacement and mouse or keyboard runs only for the active AI call"; `agentSession.test.ts` → "acknowledges one lock and ignores unrelated failures and stale unlocks".
+
+### Failure Cleanup And Connection Loss
+- Input: A quota refusal before check starts; separately, an active get_code followed by socket loss, sessionEnded or Disconnect.
+- Steps: Display the quota reason; process matching finish or connection termination.
+- Expected result: The refusal is visible even without runStarted; controls unlock and the next manual operation is possible.
+- Test: `AiPanel.test.tsx` → "shows pre-execution quota failures and unlocks on failure cleanup or disconnection"; `agentSession.test.ts` → "rejects the lock when the browser is busy and releases accepted locks on connection end".
+
+### Browser Execution Already In Progress
+- Input: A pending browser run followed by AI set_code.
+- Steps: Refuse toolStarted with accepted false; show the shared busy reason; finish the browser run.
+- Expected result: No AI edit; browser output is preserved and has no AI label.
+- Test: `AiPanel.test.tsx` → "refuses AI edits during a browser run without replacing that run's output".
