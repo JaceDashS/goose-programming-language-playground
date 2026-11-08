@@ -15,14 +15,16 @@ The AI connection panel lets Claude, ChatGPT, Claude Code or Codex edit, check a
 - The AI can replace the editor content (shown at once), read it, and run or check it. AI results appear in the output panel marked "AI"; while the AI runs or checks, the panel says so. A failed AI run shows the hub's message.
 - The tab executes nothing it receives. Unknown or malformed messages are dropped.
 - When the session ends, the panel explains why (idle, maximum time, server full, per-network or per-account limit, browser check failed, server restart, connection lost) and offers Connect again.
-- Setup help lists the MCP URL with a Copy button and how to register it in claude.ai, ChatGPT, Claude Code and Codex.
-- Starter prompt (goose D-0039), four lines:
+- Setup help is step 1: the MCP URL with a Copy button, how to add it in claude.ai, ChatGPT, Claude Code and Codex and turn it on in the chat, and that the prompt alone does not connect anything. It is open while the AI has not called a tool yet. The waiting status names step 2: paste the prompt into a chat where the server is on.
+- Starter prompt (goose D-0039, D-0046), six lines:
 
 ```
 You are connected to my Goose Playground editor through the "goose-playground" MCP server (https://api.jace-s.com/goose/mcp).
 Session token: <TOKEN>
 Call goose_docs first (topic "playground", then "tutorial"). Write code with set_code, then use check and run.
 Edit the code in my editor; do not paste code into the chat.
+If the goose-playground tools are not available in this chat, stop and ask me to add or turn on the MCP server; do not try to reach the URL any other way.
+The token only works with these tools and ends when I close the playground tab.
 ```
 
 ## Example

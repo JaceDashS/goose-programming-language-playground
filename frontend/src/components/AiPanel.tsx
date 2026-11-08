@@ -43,19 +43,25 @@ async function copy(text: string, done: (message: string) => void) {
 export default function AiPanel({ state, available, loggedIn, onConnect, onDisconnect, onLogin }: Props) {
   const [message, setMessage] = useState("");
 
-  const setup = (
-    <details className={styles.setup}>
-      <summary>Register the MCP server once</summary>
+  // The prompt alone does nothing: the AI needs the MCP server added and turned on in that chat.
+  const setup = (open: boolean) => (
+    <details className={styles.setup} open={open}>
+      <summary>Step 1: add the MCP server to your AI (once) and turn it on in the chat</summary>
       <p>
         Server URL: <code>{endpoints.mcp}</code>{" "}
         <button type="button" className={styles.small} onClick={() => copy(endpoints.mcp, setMessage)}>Copy URL</button>
       </p>
       <ul>
         <li>claude.ai: Settings → Connectors → Add custom connector, with this URL. No sign-in is needed.</li>
-        <li>ChatGPT: in developer mode, create a connector (app) with this URL and no authentication, then enable it in the chat.</li>
+        <li>
+          ChatGPT (web): Settings → Apps &amp; Connectors → Advanced settings → turn on Developer mode → Create, with this URL
+          and No authentication. Then, in each chat, open + → Developer mode and turn on goose-playground. Menu names differ
+          between ChatGPT versions.
+        </li>
         <li>Claude Code: <code>claude mcp add --transport http goose-playground {endpoints.mcp}</code></li>
         <li>Codex: <code>codex mcp add goose-playground --url {endpoints.mcp}</code></li>
       </ul>
+      <p>Pasting only the starter prompt is not enough: if the AI does not list the goose-playground tools, it is not connected yet.</p>
     </details>
   );
 
@@ -63,7 +69,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
     const prompt = starterPrompt(state.token, endpoints.mcp);
     const activity = state.lastTool && state.lastActivity
       ? `AI connected: ${TOOL_LABEL[state.lastTool]} at ${time(state.lastActivity)}.`
-      : "Waiting for the AI. Paste the starter prompt into Claude or ChatGPT, then ask for a program.";
+      : "Waiting for the AI. Step 2: paste the starter prompt into a chat where the goose-playground server is on, then ask for a program.";
     return (
       <aside className={styles.aiPanel} aria-label="AI connection">
         <div className={styles.aiHead}>
@@ -73,7 +79,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
         </div>
         <label className={styles.field}>
           <span>Starter prompt</span>
-          <textarea className={styles.prompt} readOnly value={prompt} rows={4} onFocus={(e) => e.currentTarget.select()} />
+          <textarea className={styles.prompt} readOnly value={prompt} rows={6} onFocus={(e) => e.currentTarget.select()} />
         </label>
         <div className={styles.aiHead}>
           <button type="button" className={styles.run} onClick={() => copy(prompt, setMessage)}>Copy starter prompt</button>
@@ -83,7 +89,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
           Ends after {duration(state.idleSeconds)} without AI activity, at {time(state.expiresAt)} at the latest, or when you close this tab.
           {!state.loggedIn && <>{" "}<button type="button" className={styles.linkButton} onClick={onLogin}>Log in</button> for up to 8 hours.</>}
         </p>
-        {setup}
+        {setup(!state.lastTool)}
       </aside>
     );
   }
@@ -104,7 +110,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
       <p className={styles.hint}>
         {loggedIn ? "Logged in: a connection lasts up to 8 hours." : "Without logging in a connection lasts up to 2 hours."}
       </p>
-      {setup}
+      {setup(false)}
       <span className={styles.hint} role="status">{message}</span>
     </aside>
   );

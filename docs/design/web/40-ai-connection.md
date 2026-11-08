@@ -36,7 +36,7 @@ stateDiagram-v2
 - `Playground` keeps the editor content in `codeRef` so `getCode` answers with the latest text without reconnecting. An AI `setCode` marks the editor edited, so a shared link loaded later does not overwrite it.
 - Connect is enabled by `agentAllowed(state, health)` (Normal and `agentAvailable`). Unmounting the page disconnects.
 - The output panel shows "AI · " before the status of AI results and a check result (`Check passed`, `Compile error`, limits) with diagnostics.
-- Setup help is a collapsed `details` element with the MCP URL (`endpoints.mcp`) and registration steps.
+- Setup help is a `details` element titled as step 1 with the MCP URL (`endpoints.mcp`), registration steps and the note that the prompt alone connects nothing. It is open while connected and no tool has been called, closed otherwise.
 - Layout: the shell is a flex column, so the editor panes take the spare height and the AI panel keeps its own height. On narrow screens the toolbar shortcut hint is hidden but the panel's hints stay visible.
 - Scenario: The AI calls `run` → lock handshake → `runStarted` → the output panel says "AI is running the code…" → `runFinished` → "AI · Exited with code 0 · 140 ms · server".
 

@@ -223,5 +223,7 @@ export function starterPrompt(token: string, mcpUrl: string): string {
     `Session token: ${token}`,
     "Call goose_docs first (topic \"playground\", then \"tutorial\"). Write code with set_code, then use check and run.",
     "Edit the code in my editor; do not paste code into the chat.",
+    "If the goose-playground tools are not available in this chat, stop and ask me to add or turn on the MCP server; do not try to reach the URL any other way.",
+    "The token only works with these tools and ends when I close the playground tab.",
   ].join("\n");
 }

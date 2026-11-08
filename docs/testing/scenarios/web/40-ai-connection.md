@@ -55,3 +55,9 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Steps: Refuse toolStarted with accepted false; show the shared busy reason; finish the browser run.
 - Expected result: No AI edit; browser output is preserved and has no AI label.
 - Test: `AiPanel.test.tsx` → "refuses AI edits during a browser run without replacing that run's output".
+
+### Prompt Without The MCP Server
+- Input: The user pastes the starter prompt into a ChatGPT chat where the goose-playground server was never added or turned on.
+- Steps: The AI has no goose-playground tools. With the earlier prompt it tried to reach the MCP URL from its code sandbox, which failed on DNS; the gateway log showed no request from OpenAI to `/goose/mcp` (2026-11-09).
+- Expected result: The prompt tells the AI to stop and ask the user to add or turn on the server. The panel shows step 1 open until the first tool call, with the note that pasting only the prompt is not enough.
+- Test: `agentSession.test.ts` → "starter prompt names the server, the token and the workflow".

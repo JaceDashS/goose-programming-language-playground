@@ -193,5 +193,6 @@ it("starter prompt names the server, the token and the workflow", () => {
   expect(p).toContain("Session token: " + "t".repeat(64));
   expect(p).toContain("https://api.jace-s.com/goose/mcp");
   expect(p).toContain("goose_docs");
-  expect(p.split("\n")).toHaveLength(4);
+  expect(p).toContain("If the goose-playground tools are not available in this chat, stop");
+  expect(p.split("\n")).toHaveLength(6);
 });
