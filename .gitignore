@@ -1,0 +1,15 @@
+# --- Agent work rules (Section 7) ---
+# Private files (7.1)
+*.private.*
+# Temporary files (7.2)
+tmp/
+# Debugging scripts (7.3)
+scripts/debug/
+# Agent workspace (9)
+docs/.agent/
+
+# --- Project-specific entries (language and tool conventions) ---
+node_modules/
+.next/
+dist/
+.env*
