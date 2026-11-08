@@ -1,0 +1,42 @@
+# Glossary
+
+## Goose
+- Definition: The language this playground targets (github.com/aardappel/goose). The compiler is written in C++20 and emits C. `goose run` compiles and runs a program in-process with the bundled TinyCC.
+- Note: This is a different project from Block's "goose" AI agent. Do not confuse them.
+
+## Runner
+- Definition: A program on the on-prem server, written in Go. It receives code and runs `goose run` in a throwaway gVisor container. It is the only component with Docker privileges.
+- Avoid: "compiler" (the Goose compiler is a different thing that runs inside the container), "executor"
+
+## Hub
+- Definition: The internet-facing Go service on the on-prem server. It handles browser WebSockets, the MCP endpoint, quotas, and service state. It has no Docker privileges and only sends run requests to the runner.
+- Avoid: "socket server", "MCP server" (use these only for the hub's individual roles)
+
+## Run Container
+- Definition: A gVisor (runsc) container created for one run and deleted when it ends. Runs never share containers, even for the same user.
+- Example: A user who presses Run twice gets two different containers, each with its own kernel.
+
+## gVisor
+- Definition: A container runtime that puts a user-space kernel between the container and the host kernel. User code's kernel requests are handled by this fake kernel first, so a host kernel bug is hard to reach from inside the container.
+- Code: Docker runtime name `runsc`
+
+## Warm Pool
+- Definition: Run containers the runner starts in advance and keeps waiting, so a run does not pay container startup time (~0.8 s measured).
+- Example: With 2 waiting containers, the user's run uses one immediately, and the runner starts a replacement in the background.
+
+## Fallback
+- Definition: When the on-prem server is busy or down, the browser calls the Vercel `/api/run` endpoint, which runs the code in Vercel Sandbox.
+- Note: This is cloud bursting (overflow) plus failover, not even load balancing. The agent mode does not fall back.
+
+## Session Token
+- Definition: A random token the hub issues when the browser connects over WebSocket. It is included in the AI starter prompt, and MCP tools use it to find the user's browser session.
+- Note: Anyone who has the token can control that session's editor. It expires when the tab closes.
+
+## Starter Prompt
+- Definition: The text a user copies from the playground and pastes into Claude or ChatGPT. It contains the session token and how to use the MCP tools.
+
+## Service State
+- Definition: The playground's availability level shown to the user: Normal, Degraded, or Outage.
+- Normal: On-prem is available, so both the AI agent and runs work.
+- Degraded: On-prem is busy or down. The AI agent is unavailable; runs go to the Vercel fallback.
+- Outage: Both on-prem and Vercel are unavailable. Only the editor works.
