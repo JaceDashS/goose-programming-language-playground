@@ -51,3 +51,9 @@
 - Steps: Enter the hello program and press Run.
 - Expected result: The current client reports HTTP 404 and does not use fallback. Publishing is incomplete until the primary service and route are available; a fully published hello run must display Hello, Goose with exit code 0.
 - Evidence: Production browser verification on 2026-11-08.
+
+## Public Fallback After Hub Publication
+
+- Input: Public hello program with the on-prem hub published and primary runner awaiting gVisor.
+- Steps: Press Run; the hub returns unavailable with CORS; the browser invokes Vercel fallback.
+- Expected result: Exited with code 0, Hello, Goose output and backup server status. Verified in the production browser on 2026-11-08.
