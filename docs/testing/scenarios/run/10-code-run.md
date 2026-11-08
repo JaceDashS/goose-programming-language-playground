@@ -49,3 +49,13 @@
 - Steps: the real header is always line 1 and is written before the program starts.
 - Result: the program's line is ordinary stdout.
 - Test: `TestParseHeaderRejectsProgramOutput` (plain output is not a header).
+
+## Memory Exhaustion
+- Input: a program that pushes to a growing array forever.
+- Steps: the container reaches the 512 MB limit and is killed (exit 137).
+- Result: `outcome: "killed"` after about 0.5 s. Checked against real Docker on 2026-11-08 (489 ms).
+
+## Calling A C Library Function
+- Input: `extern fn getpid() -> i32;` (or `system`) called from `main`.
+- Steps: the check passes; `goose run` fails to link the symbol in TinyCC.
+- Result: `outcome: "exited"`, `exitCode: 1`, stderr `tcc: error: unresolved reference to 'getpid'`. Checked against real Docker on 2026-11-08. This narrows what user code can call, but isolation does not rely on it: other extern routes may exist, so every container flag stays.
