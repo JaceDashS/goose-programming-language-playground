@@ -121,12 +121,12 @@ As of 2026-11-08.
 | Part | State | Documents |
 | --- | --- | --- |
 | Run contracts | Draft, awaiting confirmation | [Run API](../api/10-run.md), [Session Socket](../api/20-socket.md) |
-| Run image and runner | Implemented, checked on local Docker without gVisor | [Code Run Design](../design/run/10-code-run.md) |
+| Run image and runner | Implemented and verified on production gVisor | [Code Run Design](../design/run/10-code-run.md) |
 | Hub run and health | Implemented; quotas not yet | [Hub Run Design](../design/run/20-hub-run.md) |
 | Playground page | Implemented with a plain text area | [Playground Page Design](../design/web/10-playground-page.md) |
 | Vercel fallback | Implemented and verified with a live SDK sandbox | [Vercel Fallback Design](../design/run/30-vercel-fallback.md) |
 | Agent mode (MCP, socket) | Not started | [Session Socket](../api/20-socket.md) |
-| gVisor on the server | Not installed | [gVisor Install](../operations/10-gvisor-install.md) |
+| gVisor on the server | Installed and verified, release-20261102.0 | [gVisor Install](../operations/10-gvisor-install.md) |
 
 ## Open Planning Items
 

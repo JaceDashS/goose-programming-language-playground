@@ -49,3 +49,11 @@ sudo cp ~/daemon.json.bak /etc/docker/daemon.json && sudo systemctl reload docke
 - Input: Green-G4 with Docker 29.1.3, jace-s containers running, no `runsc`.
 - Steps: 1 → 5 above.
 - Result: `docker info` lists `runsc`, the jace-s containers keep running with unchanged uptime, and the Goose check prints `ok` under gVisor.
+
+## Production Verification
+
+Verified on Green-G4 on 2026-11-08 with runsc release-20261102.0. Configuration and running container IDs were backed up before installation; the before and after container ID files match after Docker reload. Existing platform containers stayed running. The run containers report runtime runsc, network none and user 10001.
+
+- Input: Public hello program after the primary runner starts.
+- Steps: GET /goose/health reports runner up with two free slots; POST /goose/run executes inside gVisor.
+- Expected result: backend onprem, outcome exited, exit code 0 and Hello, Goose output. The public browser displays server rather than backup server. A direct fallback request is refused with use_primary while capacity is free.

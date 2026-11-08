@@ -57,3 +57,9 @@
 - Input: Public hello program with the on-prem hub published and primary runner awaiting gVisor.
 - Steps: Press Run; the hub returns unavailable with CORS; the browser invokes Vercel fallback.
 - Expected result: Exited with code 0, Hello, Goose output and backup server status. Verified in the production browser on 2026-11-08.
+
+## Public Primary After gVisor Rollout
+
+- Input: Public hello program with the primary runner running under gVisor.
+- Steps: Open the deployed playground and press Run.
+- Expected result: Exited with code 0, Hello, Goose output and server status. GET /goose/health reports runner up with free slots. A direct POST to Vercel fallback returns use_primary without creating a sandbox. Verified in the production browser and HTTP endpoints on 2026-11-08.

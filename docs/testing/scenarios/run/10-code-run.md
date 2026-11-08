@@ -66,3 +66,9 @@
 - Steps: Build goose-run:v2026.4; inspect image user and entrypoint and check run.sh permissions with a trusted stat command.
 - Expected result: Build succeeds, configured user is 10001, entrypoint is /opt/goose/run.sh and file mode is 0555. No BuildKit-only COPY chmod instruction is required.
 - Design: [Code Run](../../../design/run/10-code-run.md#docker-builder-compatibility).
+
+## Production Runtime Isolation
+
+- Input: Warm run containers after the production runner starts.
+- Steps: Inspect container runtime, network mode and configured user; submit the hello program through the public hub.
+- Expected result: Runtime runsc, network none, user 10001 and a successful onprem hello result. Existing platform container IDs match the pre-installation backup after Docker reload. Verified on Green-G4 on 2026-11-08.

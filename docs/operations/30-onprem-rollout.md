@@ -22,3 +22,9 @@ If sudo authentication is unavailable, the hub can be published first with docke
 - Expected result: Hello output appears with backup server status. After the runner is published, subsequent runs use the primary without changing the browser.
 
 - Design: [Hub Run](../design/run/20-hub-run.md).
+
+## Completed Rollout
+
+Verified on 2026-11-08: hub and runner are running, the run image builds on the server Docker builder, runsc is registered and the warm pool uses gVisor with no network and UID 10001. Public health reports runner up and two free slots. The public browser hello run exits with code 0 and shows server output. Existing application containers retained their IDs across Docker reload.
+
+All 32 release samples were checked with production isolation flags. The 18 bundled CLI samples remain valid. See [Samples Scenarios](../testing/scenarios/web/20-samples.md) for every result.
