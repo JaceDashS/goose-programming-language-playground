@@ -31,3 +31,5 @@
 - The hub image is distroless and runs as non-root. It joins the `internal` network (to reach the runner) and the external `goose-gateway` network (reached by the jace-s gateway).
 - The runner image has the docker client and the host Docker socket. It joins only the `internal` network, which has no outside access.
 - Guide: [Local Run](../../guides/10-local-run.md).
+
+The hub joins goose-gateway with the goose-hub alias; the platform gateway forwards the unchanged /goose/ prefix. The runner stays on its private network. See [On Premises Rollout](../../operations/30-onprem-rollout.md).

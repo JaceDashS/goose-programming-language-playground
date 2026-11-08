@@ -11,7 +11,10 @@ services:
       RUNNER_URL: "http://runner:8090"
       ALLOWED_ORIGINS: "https://goose-playground.jace-s.com"
       TURNSTILE_SECRET: "${TURNSTILE_SECRET:-}"
-    networks: [internal, gateway]
+    networks:
+      internal:
+      gateway:
+        aliases: [goose-hub]
 
   runner:
     build: { context: ../server, target: runner }
