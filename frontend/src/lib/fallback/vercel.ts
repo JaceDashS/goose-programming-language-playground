@@ -8,7 +8,7 @@ export const GOOSE_SHA256 = "559ad7572df89fcd1273512d8679528bcdf876c252ec1f31608
 
 /** Create a fresh SDK sandbox. Compiler setup is checked before any source is executed. */
 export async function createVercelSandbox(): Promise<RunSandbox> {
-  const sandbox = await Sandbox.create({ runtime: "node24", timeout: 60000, resources: { vcpus: 1 } });
+  const sandbox = await Sandbox.create({ image: "vercel/sandbox/node:24", timeout: 60000, resources: { vcpus: 1 } });
   return {
     async prepare(code) {
       const response = await fetch(GOOSE_URL, { signal: AbortSignal.timeout(15000) });
@@ -18,12 +18,15 @@ export async function createVercelSandbox(): Promise<RunSandbox> {
         throw new Error("Compiler checksum mismatch");
       await sandbox.writeFiles([{ path: "/vercel/sandbox/goose.tgz", content: archive }]);
       const setup = await sandbox.runCommand({ cmd: "bash", sudo: true, timeoutMs: 30000, args: ["-ceu", `
-        dnf install -y glibc-devel tar gzip >/dev/null
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -qq
+        apt-get install -y --no-install-recommends libc6-dev tar gzip >/dev/null
         mkdir -p /opt/goose /work
         tar xzf /vercel/sandbox/goose.tgz -C /opt/goose --strip-components=1
         useradd --uid 10001 --no-create-home --shell /sbin/nologin goose
         chown 10001:10001 /work
         chmod -R a-w /opt/goose
+        /opt/goose/goose --version >/dev/null
       `] });
       if (setup.exitCode !== 0) throw new Error("Compiler setup failed");
       await sandbox.writeFiles([{ path: "/work/main.goose", content: Buffer.from(code, "utf8") }]);

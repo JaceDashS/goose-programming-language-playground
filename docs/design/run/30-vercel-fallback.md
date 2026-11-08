@@ -28,9 +28,9 @@ flowchart LR
 - `RunCounter.take(now, hourlyCap, dailyCap)` atomically reserves one run. `MemoryRunCounter` uses UTC fixed hourly and daily windows, shared by every request in the current process. Failed creations consume admission conservatively. A real shared store is still required before caps span multiple server instances and cold starts.
 - `RunSandbox.prepare(code)` installs the pinned compiler and writes source. `command(phase, options)` receives the remaining deadline, cancellation signal and byte output callback; it returns an exit code. `stop()` terminates the sandbox.
 - `executeSandbox(sandbox, code)` bounds check plus run to 10 seconds, streams combined output up to 1 MiB, returns structured diagnostics, maps exit 137 or negative exit to killed, and stops in a finally block. Setup time is excluded, as container startup is excluded on-prem. Setup failures answer unavailable.
-- `createVercelSandbox()` creates an SDK sandbox, downloads Goose v2026.4 linux-x64, verifies SHA-256 before extraction, installs libc development headers, writes code without shell interpolation and disables networking before checking. Commands run as UID 10001 with a cleared environment, 64-process and 512 MiB address-space limits. stdin is closed.
+- `createVercelSandbox()` creates a fresh Ubuntu-based vercel/sandbox/node:24 SDK sandbox, downloads Goose v2026.4 linux-x64, verifies SHA-256 before extraction, installs libc development headers, writes code without shell interpolation and disables networking before checking. Commands run as UID 10001 with a cleared environment, 64-process and 512 MiB address-space limits. stdin is closed.
 - `POST(request)` supplies environment settings and a module-wide counter. `HUB_URL` defaults to https://api.jace-s.com; `TURNSTILE_SECRET` enables verification; `SANDBOX_HOURLY_CAP` and `SANDBOX_DAILY_CAP` default to 30 and 150. Explicit zero disables admission. Node runtime and a 120 second function ceiling permit setup and cleanup; the sandbox has a separate 60 second lifetime ceiling.
-- SDK reference: https://vercel.com/docs/sandbox/sdk-reference, checked against @vercel/sandbox 3.9.1 on 2026-11-08. No real sandbox was created during verification.
+- SDK reference: https://vercel.com/docs/sandbox/sdk-reference, checked against @vercel/sandbox 3.9.1 on 2026-11-08. Live verification also checks compiler compatibility and hello output in the deployed SDK environment.
 
 ## Admission Flow
 
@@ -52,4 +52,4 @@ flowchart TD
 
 - Which shared counter store should replace the explicitly provisional process-local implementation for multi-instance deployments?
 - A Turnstile token verified by the hub is single-use. Should the browser obtain a fresh token before fallback after a busy primary? This task preserves the specified verification contract and does not modify the protected run client.
-- A real SDK sandbox and its runtime setup require owner-run validation; only mocked execution is authorized here.
+- The deployed SDK sandbox has passed hello execution; the production smoke test is recorded in the deployment operations document.

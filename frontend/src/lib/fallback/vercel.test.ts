@@ -27,7 +27,7 @@ describe("Vercel SDK adapter",()=>{
     expect(mocks.runCommand.mock.calls[0][0].args.join(" ")).toContain("< /dev/null");
     expect(mocks.runCommand.mock.calls[0][0].args).toContain("env");expect(chunks).toEqual(["hello\n"]);await box.stop();expect(mocks.stop).toHaveBeenCalledOnce();
   });
-  it("requests one fresh bounded sandbox",async()=>{await createVercelSandbox();expect(mocks.create).toHaveBeenCalledWith({runtime:"node24",timeout:60000,resources:{vcpus:1}});});
+  it("requests one fresh bounded sandbox",async()=>{await createVercelSandbox();expect(mocks.create).toHaveBeenCalledWith({image:"vercel/sandbox/node:24",timeout:60000,resources:{vcpus:1}});});
 });
 
 
@@ -44,4 +44,13 @@ it("verifies the pinned digest before setup and denies network before checking",
 it("stops when compiler setup fails",async()=>{
   mocks.digest.mockReturnValue(GOOSE_SHA256);mocks.fetch.mockResolvedValue(new Response("archive"));mocks.runCommand.mockResolvedValue({exitCode:1});
   await expect(executeSandbox(await createVercelSandbox(),"source")).rejects.toThrow("setup");expect(mocks.stop).toHaveBeenCalledOnce();expect(mocks.network).not.toHaveBeenCalled();
+});
+
+it("checks compiler compatibility during trusted setup", async () => {
+  mocks.digest.mockReturnValue(GOOSE_SHA256);
+  mocks.fetch.mockResolvedValue(new Response("archive"));
+  await executeSandbox(await createVercelSandbox(), "source");
+  const setup = mocks.runCommand.mock.calls[0][0];
+  expect(setup.args[1]).toContain("apt-get install");
+  expect(setup.args[1]).toContain("/opt/goose/goose --version");
 });

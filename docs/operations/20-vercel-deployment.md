@@ -39,3 +39,9 @@ The browser tries the primary first and uses the fallback when it is unavailable
 - Input: Production deployment and a hello program submitted with the exact public Origin.
 - Steps: Open the page, press Run, inspect the result and verify the sandbox stops.
 - Expected result: The output contains Hello, Goose and the backend is onprem or sandbox according to primary availability.
+
+## Runtime Verification
+
+- The function uses Node 24 and the Sandbox uses the Ubuntu-based vercel/sandbox/node:24 managed image. The legacy runtime named node24 uses an older GLIBC and cannot run this Goose release.
+- Setup verifies goose --version before processing source so an incompatible compiler is an infrastructure failure rather than an empty compiler diagnostic response.
+- Verified on 2026-11-08: exact domain CNAME and HTTPS certificate, successful Vercel production build, live SDK check exit 0, and hello execution exit 0 with Hello, Goose output.

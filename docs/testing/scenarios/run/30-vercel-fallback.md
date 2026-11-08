@@ -55,3 +55,10 @@
 - Steps: Execute check then run under the shared deadline.
 - Expected result: Exact output capacity is accepted without truncation; the stalled run times out after 3 remaining seconds, at 10 seconds total.
 - Test: frontend/src/lib/fallback/handler.test.ts
+
+## Compiler Runtime Compatibility
+
+- Input: Goose v2026.4 linux-x64, verified SHA-256, and the hello program in a fresh Sandbox.
+- Steps: Start the Ubuntu-based vercel/sandbox/node:24 image, install libc development headers, check the compiler version before admitting source, then check and run the hello program with no stdin and network disabled.
+- Expected result: The compiler starts successfully, check exits 0 with an empty diagnostic array, run exits 0 and prints Hello, Goose. A legacy Amazon Linux node24 runtime fails because its GLIBC lacks version 2.35 and must not be selected.
+- Test: frontend/src/lib/fallback/vercel.test.ts checks the managed image selection and setup; live Sandbox smoke check verified on 2026-11-08.
