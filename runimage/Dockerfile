@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends libc6-dev \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin runner
 COPY --from=fetch /opt/goose /opt/goose
+COPY run.sh /opt/goose/run.sh
+RUN chmod 0555 /opt/goose/run.sh
 ENV PATH=/opt/goose:$PATH \
     GOOSE_HOME=/work/.goose \
     GOOSE_PROGRESS=plain \
@@ -23,5 +25,4 @@ ENV PATH=/opt/goose:$PATH \
 USER 10001
 WORKDIR /work
 # The runner writes main.goose into /work (a tmpfs) and runs /opt/goose/run.sh.
-COPY --chmod=0555 run.sh /opt/goose/run.sh
 ENTRYPOINT ["/opt/goose/run.sh"]

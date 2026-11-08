@@ -59,3 +59,10 @@
 - Input: `extern fn getpid() -> i32;` (or `system`) called from `main`.
 - Steps: the check passes; `goose run` fails to link the symbol in TinyCC.
 - Result: `outcome: "exited"`, `exitCode: 1`, stderr `tcc: error: unresolved reference to 'getpid'`. Checked against real Docker on 2026-11-08. This narrows what user code can call, but isolation does not rely on it: other extern routes may exist, so every container flag stays.
+
+## Legacy Docker Builder
+
+- Input: Green-G4 Docker builder without buildx and the runimage directory.
+- Steps: Build goose-run:v2026.4; inspect image user and entrypoint and check run.sh permissions with a trusted stat command.
+- Expected result: Build succeeds, configured user is 10001, entrypoint is /opt/goose/run.sh and file mode is 0555. No BuildKit-only COPY chmod instruction is required.
+- Design: [Code Run](../../../design/run/10-code-run.md#docker-builder-compatibility).

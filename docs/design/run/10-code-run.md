@@ -33,3 +33,11 @@
 - Runs as uid 10001. `GOOSE_HOME` is on the `/work` tmpfs.
 - Protocol: stdin is the source. stdout line 1 is `GOOSE-CHECK <check exit> <diagnostics JSON>`, then the program's stdout. stderr is the program's stderr. The program runs only when the check passes. The header comes before any program output, so a program cannot forge it.
 - Measured 2026-11-08 on a local Docker Desktop without gVisor: hello world 0.11 s inside the container and 0.2 s per request with a warm container; a cold `docker run` of the sieve sample 0.85 s.
+
+## Docker Builder Compatibility
+
+- Input: runimage/Dockerfile and run.sh on a Docker host without the buildx plugin.
+- Steps: Copy run.sh and set mode 0555 in a separate build RUN instruction before selecting UID 10001.
+- Output: goose-run:v2026.4 with the same nonroot entrypoint on legacy and BuildKit builders.
+- Scenario: docker build on Green-G4 succeeds without COPY chmod support; inspecting the resulting image shows UID 10001 and /opt/goose/run.sh as its entrypoint.
+- Scenarios: [Code Run](../../testing/scenarios/run/10-code-run.md).
