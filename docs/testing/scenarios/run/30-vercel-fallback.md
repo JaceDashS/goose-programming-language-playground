@@ -62,3 +62,10 @@
 - Steps: Start the Ubuntu-based vercel/sandbox/node:24 image, install libc development headers, check the compiler version before admitting source, then check and run the hello program with no stdin and network disabled.
 - Expected result: The compiler starts successfully, check exits 0 with an empty diagnostic array, run exits 0 and prints Hello, Goose. A legacy Amazon Linux node24 runtime fails because its GLIBC lacks version 2.35 and must not be selected.
 - Test: frontend/src/lib/fallback/vercel.test.ts checks the managed image selection and setup; live Sandbox smoke check verified on 2026-11-08.
+
+## Release Download Gateway Failure
+
+- Input: GitHub release browser download endpoint returns 504 or a network failure.
+- Steps: Retry through the official API for the same v2026.4 linux-x64 asset, request binary content and verify the pinned SHA-256 before extraction.
+- Expected result: A valid matching archive permits setup; both endpoints failing or any digest mismatch prevents code execution and stops the sandbox.
+- Test: frontend/src/lib/fallback/vercel.test.ts.

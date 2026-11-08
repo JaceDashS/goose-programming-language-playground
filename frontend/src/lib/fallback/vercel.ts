@@ -4,6 +4,7 @@ import { Writable } from "node:stream";
 import type { RunSandbox } from "./execute";
 
 export const GOOSE_URL = "https://github.com/aardappel/goose/releases/download/v2026.4/goose-v2026.4-linux-x64.tar.gz";
+const GOOSE_ASSET_URL = "https://api.github.com/repos/aardappel/goose/releases/assets/718918559";
 export const GOOSE_SHA256 = "559ad7572df89fcd1273512d8679528bcdf876c252ec1f31608d3808b24125b3";
 
 /** Create a fresh SDK sandbox. Compiler setup is checked before any source is executed. */
@@ -11,7 +12,13 @@ export async function createVercelSandbox(): Promise<RunSandbox> {
   const sandbox = await Sandbox.create({ image: "vercel/sandbox/node:24", timeout: 60000, resources: { vcpus: 1 } });
   return {
     async prepare(code) {
-      const response = await fetch(GOOSE_URL, { signal: AbortSignal.timeout(15000) });
+      let response: Response | undefined;
+      try { response = await fetch(GOOSE_URL, { signal: AbortSignal.timeout(15000) }); } catch { /* Try the release asset API. */ }
+      if (!response?.ok) {
+        response = await fetch(GOOSE_ASSET_URL, {
+          headers: { Accept: "application/octet-stream" }, signal: AbortSignal.timeout(15000),
+        });
+      }
       if (!response.ok) throw new Error("Compiler download failed");
       const archive = Buffer.from(await response.arrayBuffer());
       if (createHash("sha256").update(archive).digest("hex") !== GOOSE_SHA256)

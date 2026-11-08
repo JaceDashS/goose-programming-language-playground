@@ -44,3 +44,10 @@
 - Input: runner and hub binaries on local Docker, hub `ALLOWED_ORIGINS=http://localhost:3000`.
 - Steps: preflight `OPTIONS /goose/run`, then POST the default program.
 - Result: 204 with CORS headers; `stdout: "Hello, Goose!\n"`. Checked 2026-11-08.
+
+## Primary Route Not Published
+
+- Input: Public editor has loaded but the primary /goose/run endpoint answers HTTP 404 because its service and gateway route have not been published.
+- Steps: Enter the hello program and press Run.
+- Expected result: The current client reports HTTP 404 and does not use fallback. Publishing is incomplete until the primary service and route are available; a fully published hello run must display Hello, Goose with exit code 0.
+- Evidence: Production browser verification on 2026-11-08.

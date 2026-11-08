@@ -54,3 +54,14 @@ it("checks compiler compatibility during trusted setup", async () => {
   expect(setup.args[1]).toContain("apt-get install");
   expect(setup.args[1]).toContain("/opt/goose/goose --version");
 });
+
+
+it("uses the release asset API when the browser download endpoint fails", async () => {
+  mocks.digest.mockReturnValue(GOOSE_SHA256);
+  mocks.fetch.mockResolvedValueOnce(new Response("gateway timeout", { status: 504 }))
+    .mockResolvedValueOnce(new Response("archive"));
+  await executeSandbox(await createVercelSandbox(), "source");
+  expect(mocks.fetch.mock.calls[1][0]).toContain("/releases/assets/718918559");
+  expect(mocks.fetch.mock.calls[1][1].headers.Accept).toBe("application/octet-stream");
+  expect(mocks.digest).toHaveBeenCalledWith("hex");
+});
