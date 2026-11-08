@@ -91,3 +91,10 @@
 - Steps: Press Run.
 - Expected result: No run request is sent and the output shows `turnstile_failed` with "The browser check failed." or "The browser check timed out."
 - Test: `runGoose.test.ts` → "reports turnstile_failed without sending when no token can be obtained"; `turnstile.test.ts`.
+
+## Turnstile Production Rollout
+
+- Input: Production page built with the site key; `TURNSTILE_SECRET` set in Vercel Production and for the platform hub.
+- Steps: Press Run on https://goose-playground.jace-s.com; POST without a token to `/api/run` and to `https://api.jace-s.com/goose/run`.
+- Expected result: The browser run succeeds; both tokenless requests return 403 `turnstile_failed`.
+- Verified 2026-11-09: browser run passed (checked by the user); both tokenless requests returned 403; hub health reported the runner up with two free slots.
