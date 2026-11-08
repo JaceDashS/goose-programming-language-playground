@@ -16,3 +16,6 @@
 - Input: The editor holds `fn main() { print("안녕"); }` and the user presses Share.
 - Steps: compress → base64url → `https://goose-playground.jace-s.com/#code=...` copied.
 - Result: Opening that URL in a new tab shows the same code, Korean text intact.
+
+- Design: [URL Sharing Design](../../design/web/30-url-sharing.md)
+- Scenarios: [URL Sharing Scenarios](../../testing/scenarios/web/30-url-sharing.md)

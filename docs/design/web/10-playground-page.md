@@ -36,3 +36,4 @@
 - Spec for the implementation: [Vercel Fallback](../../specs/run/30-vercel-fallback.md).
 
 `Playground.tsx` also loads static release samples through the [Samples Design](20-samples.md).
+`Playground.tsx` restores hash code and copies shared links as described in [URL Sharing](30-url-sharing.md).

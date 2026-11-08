@@ -5,6 +5,7 @@ import type { Health, ServiceState } from "@/lib/contract";
 import { runGoose, type RunOutcome } from "@/lib/runGoose";
 import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/serviceState";
 import { endpoints } from "@/lib/endpoints";
+import { encodeShare, decodeShare, SHARE_INVALID } from "@/lib/share";
 import { samples } from "@/samples";
 import OutputPanel from "./OutputPanel";
 import styles from "./Playground.module.css";
@@ -22,6 +23,36 @@ export default function Playground() {
   const [state, setState] = useState<ServiceState>("normal");
   const fallbackDown = useRef(false);
   const loadedCode = useRef(HELLO);
+  const edited = useRef(false);
+  const [shareMessage, setShareMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    decodeShare(window.location.hash).then(shared => {
+      if (!cancelled && !edited.current && shared !== null) {
+        loadedCode.current = shared;
+        setCode(shared);
+      }
+    }).catch(() => {
+      if (!cancelled) setShareMessage(SHARE_INVALID);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const share = async () => {
+    try {
+      const url = await encodeShare(code, window.location.href);
+      window.history.replaceState(null, "", url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareMessage("Link copied.");
+      } catch {
+        setShareMessage("The link is in the address bar, but could not be copied.");
+      }
+    } catch (error) {
+      setShareMessage(error instanceof Error ? error.message : "This program could not be shared.");
+    }
+  };
 
   // Recheck the hub's health on a schedule that backs off while not normal.
   useEffect(() => {
@@ -96,6 +127,7 @@ export default function Playground() {
             const sample = samples.find((s) => s.name === e.target.value);
             if (!sample) return;
             if (code !== loadedCode.current && !window.confirm("Replace your code with the sample?")) return;
+            edited.current = true;
             loadedCode.current = sample.code;
             setCode(sample.code);
           }}>
@@ -103,6 +135,8 @@ export default function Playground() {
             {samples.map((sample) => <option key={sample.name} value={sample.name}>{sample.name}</option>)}
           </select>
         </label>
+        <button onClick={share}>Share</button>
+        <span role="status">{shareMessage}</span>
         <span className={styles.hint}>Ctrl+Enter</span>
       </div>
 
@@ -111,7 +145,7 @@ export default function Playground() {
           <textarea
             className={styles.editor}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => { edited.current = true; setCode(e.target.value); }}
             onKeyDown={(e) => {
               if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && canRun) {
                 e.preventDefault();
