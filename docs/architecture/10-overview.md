@@ -114,6 +114,20 @@ Checked 2026-11-08 against the Vercel docs.
 - Sandbox: 5 CPU-hours/month, 420 GB-hours of memory, 5,000 creations, 10 concurrent, 45 minutes per session.
 - Non-commercial use only. Exceeding a limit pauses the feature for 30 days; there is no charge.
 
+## Implementation Status
+
+As of 2026-11-08.
+
+| Part | State | Documents |
+| --- | --- | --- |
+| Run contracts | Draft, awaiting confirmation | [Run API](../api/10-run.md), [Session Socket](../api/20-socket.md) |
+| Run image and runner | Implemented, checked on local Docker without gVisor | [Code Run Design](../design/run/10-code-run.md) |
+| Hub run and health | Implemented; quotas not yet | [Hub Run Design](../design/run/20-hub-run.md) |
+| Playground page | Implemented with a plain text area | [Playground Page Design](../design/web/10-playground-page.md) |
+| Vercel fallback | Stub answering `unavailable` | [Vercel Fallback](../specs/run/30-vercel-fallback.md) |
+| Agent mode (MCP, socket) | Not started | [Session Socket](../api/20-socket.md) |
+| gVisor on the server | Not installed | [gVisor Install](../operations/10-gvisor-install.md) |
+
 ## Open Planning Items
 
 1. Submodule split: units, interfaces, implementation order.
