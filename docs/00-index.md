@@ -13,3 +13,4 @@ Implementation has started (2026-11-08). Remaining open items are decided during
 - [API](api/00-index.md) — Run and health endpoints, error codes, and the session socket messages
 - [Testing](testing/00-index.md) — Test strategy and scenarios
 - [Guides](guides/00-index.md) — Local run and other procedures
+- [Operations](operations/00-index.md) — Server procedures such as the gVisor install
