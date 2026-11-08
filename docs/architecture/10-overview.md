@@ -4,6 +4,8 @@ Status: implementation started (2026-11-08). The open planning items below are d
 
 ## Summary
 
+This repository holds the browser client (`frontend/`) and a copy of the JSON schemas. The hub, runner and run image below are built and deployed by the jace-s platform (`services/goose/`).
+
 The playground runs Goose code on the on-prem server (Green-G4) by default. When on-prem is busy or down, the browser falls back to Vercel Sandbox. User code always runs in an isolated container (gVisor), and one container is used per run.
 Users can register the playground's MCP server in Claude or ChatGPT. With the starter prompt, the AI can then edit, check and run code in the user's open browser editor.
 
@@ -121,12 +123,12 @@ As of 2026-11-08.
 | Part | State | Documents |
 | --- | --- | --- |
 | Run contracts | Draft, awaiting confirmation | [Run API](../api/10-run.md), [Session Socket](../api/20-socket.md) |
-| Run image and runner | Implemented and verified on production gVisor | [Code Run Design](../design/run/10-code-run.md) |
-| Hub run and health | Implemented; quotas not yet | [Hub Run Design](../design/run/20-hub-run.md) |
+| Run image and runner | Implemented and verified on production gVisor; moved to the jace-s platform | jace-s platform `services/goose/` |
+| Hub run and health | Implemented, quotas not yet; moved to the jace-s platform | jace-s platform `services/goose/` |
 | Playground page | Implemented with a plain text area | [Playground Page Design](../design/web/10-playground-page.md) |
 | Vercel fallback | Implemented and verified with a live SDK sandbox | [Vercel Fallback Design](../design/run/30-vercel-fallback.md) |
 | Agent mode (MCP, socket) | Not started | [Session Socket](../api/20-socket.md) |
-| gVisor on the server | Installed and verified, release-20261102.0 | [gVisor Install](../operations/10-gvisor-install.md) |
+| gVisor on the server | Installed and verified, release-20261102.0; operated by the jace-s platform | jace-s platform `services/goose/` |
 
 ## Open Planning Items
 

@@ -1,7 +1,9 @@
 # Hub Run Design
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 - Spec: [Hub Run](../../specs/run/20-hub-run.md)
-- Architecture: [Overview](../../architecture/10-overview.md#components), [Data Flow](../../architecture/20-data-flow.md#run-request)
+- Architecture: [Overview](../../../architecture/10-overview.md#components), [Data Flow](../../../architecture/20-data-flow.md#run-request)
 - All scenarios: [Hub Run Scenarios](../../testing/scenarios/run/20-hub-run.md#hub-run-scenarios)
 
 ## Run Endpoint

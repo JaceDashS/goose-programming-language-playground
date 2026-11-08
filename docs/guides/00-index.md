@@ -1,3 +1,3 @@
 # Guides
 
-- [Local Run](10-local-run.md) — Run the hub and runner with Docker on a development machine
+Running the hub and runner locally is documented in the jace-s platform. Frontend commands are in [Test Strategy](../testing/10-strategy.md#commands).

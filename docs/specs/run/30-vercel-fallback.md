@@ -1,6 +1,6 @@
 # Vercel Fallback
 
-- Related: [Run API](../../api/10-run.md), [Code Run](10-code-run.md), [Data Flow](../../architecture/20-data-flow.md#fallback)
+- Related: [Run API](../../api/10-run.md), [Data Flow](../../architecture/20-data-flow.md#fallback)
 - Route: `frontend/src/app/api/run/route.ts`
 
 ## Requirements

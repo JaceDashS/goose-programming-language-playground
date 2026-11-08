@@ -1,8 +1,10 @@
 # gVisor Install
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 Procedure for registering the gVisor runtime (`runsc`) with Docker on the on-prem server. The jace-s production stack runs on the same Docker daemon, so the daemon is **reloaded, never restarted**. Run it only with the server owner's approval.
 
-- Related: [Overview](../architecture/10-overview.md#isolation), [Code Run Design](../design/run/10-code-run.md#docker-backend)
+- Related: [Overview](../../architecture/10-overview.md#isolation), [Code Run Design](../design/run/10-code-run.md#docker-backend)
 
 ## Steps
 

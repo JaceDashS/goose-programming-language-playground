@@ -1,19 +1,17 @@
 # Test Strategy
 
 ## Levels
-- Unit tests run without Docker. The runner is tested against a fake backend that imitates the run image protocol (`server/internal/runner/runner_test.go`).
 - The browser run client is tested with a fake `fetch` (`frontend/src/lib/runGoose.test.ts`).
-- Contract tests check that every schema example in `schema/` decodes into the Go types (`server/internal/contract/contract_test.go`).
-- Container checks run the real image with real Docker. They are run by hand before a release and recorded in the scenario documents with the date.
+- Contract tests regenerate the TypeScript types from `schema/` and validate every schema example (`frontend/scripts/gen-contract.test.ts`). `schema/` is a copy of the jace-s platform schemas; the platform test `TestClientSchemaCopyMatches` fails when the copy differs.
+- Hub, runner and run image tests live in the jace-s platform with that code.
 
 ## Commands
-- Go: `go test ./...` in `server/`.
 - Frontend: `npm test` (Vitest), `npm run lint` and `npx tsc --noEmit` in `frontend/`.
 
 ## Test Data
 - Test programs are short inline Goose sources. No user code is stored as test data.
 
 ## Example
-- Input: A change to how the runner reads output.
-- Steps: `go test ./...` in `server/`, then run the image with real Docker for the output limit scenario.
-- Result: Unit tests pass and the scenario document gets a new check date.
+- Input: The platform adds a field to `run-result.schema.json`.
+- Steps: Copy the schema into `schema/`, run `npm run gen:contract` and `npm test` in `frontend/`.
+- Result: The generated types include the field, the freshness test passes, and the platform copy check passes after the submodule reference is updated.

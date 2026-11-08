@@ -1,7 +1,9 @@
 # Code Run Design
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 - Spec: [Code Run](../../specs/run/10-code-run.md)
-- Architecture: [Overview](../../architecture/10-overview.md#isolation)
+- Architecture: [Overview](../../../architecture/10-overview.md#isolation)
 - All scenarios: [Code Run Scenarios](../../testing/scenarios/run/10-code-run.md#code-run-scenarios)
 
 ## Runner

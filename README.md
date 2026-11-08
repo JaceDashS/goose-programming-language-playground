@@ -9,11 +9,10 @@ Status: early implementation. Start from [docs/00-index.md](docs/00-index.md).
 | Path | Contents |
 | --- | --- |
 | `docs/` | Specs, architecture, design, and test scenarios |
-| `schema/` | JSON schemas shared by the browser, hub and runner |
-| `server/` | Go module: `cmd/hub`, `cmd/runner`, `internal/` |
-| `runimage/` | Run container image (Goose release + run script) |
+| `schema/` | Copy of the run and socket JSON schemas used to generate the client types |
 | `frontend/` | Next.js page and the Vercel fallback route |
-| `deploy/` | Compose file for the on-prem hub and runner |
+
+The on-prem hub and runner that execute code at `api.jace-s.com/goose` are operated by the jace-s platform and are not part of this repository.
 
 ## License
 

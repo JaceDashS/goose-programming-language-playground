@@ -1,7 +1,9 @@
 # Code Run
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 - Design: [Code Run Design](../../design/run/10-code-run.md)
-- API: [Run API](../../api/10-run.md)
+- API: [Run API](../../../api/10-run.md)
 
 ## Requirements
 

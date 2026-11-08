@@ -1,5 +1,7 @@
 # Local Run
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 How to run the hub and runner on a development machine with Docker. gVisor is usually not installed locally, so the runner is started with `RUNNER_RUNTIME=default`. Never use that setting on a server.
 
 ## Steps

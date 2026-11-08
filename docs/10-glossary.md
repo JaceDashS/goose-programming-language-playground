@@ -43,7 +43,7 @@
 
 ## Run Result
 - Definition: The outcome of one run, with output and compiler diagnostics. The same shape comes from the runner, the hub and the Vercel fallback.
-- Code: `RunResult` (`server/internal/contract`), `schema/run-result.schema.json`
+- Code: `RunResult` (`frontend/src/lib/contract.ts`), `schema/run-result.schema.json` (copy of the platform schema)
 - Example: A program that does not compile returns `outcome: "compile_error"` with a diagnostic at the failing line, and nothing runs.
 
 ## Run Slot

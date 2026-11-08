@@ -1,5 +1,7 @@
 # On Premises Rollout
 
+> Archived 2026-11-08: The Goose hub, runner and run image moved to the jace-s platform repository (`services/goose/`), which now owns this document. This repository keeps only the browser client.
+
 ## Hub And Runner
 
 The Goose stack is deployed separately from the platform. Its external goose-gateway network connects only the hub and the platform gateway. The hub alias is goose-hub; the runner is reachable only on the private internal network.
@@ -27,4 +29,4 @@ If sudo authentication is unavailable, the hub can be published first with docke
 
 Verified on 2026-11-08: hub and runner are running, the run image builds on the server Docker builder, runsc is registered and the warm pool uses gVisor with no network and UID 10001. Public health reports runner up and two free slots. The public browser hello run exits with code 0 and shows server output. Existing application containers retained their IDs across Docker reload.
 
-All 32 release samples were checked with production isolation flags. The 18 bundled CLI samples remain valid. See [Samples Scenarios](../testing/scenarios/web/20-samples.md) for every result.
+All 32 release samples were checked with production isolation flags. The 18 bundled CLI samples remain valid. See [Samples Scenarios](../../testing/scenarios/web/20-samples.md) for every result.

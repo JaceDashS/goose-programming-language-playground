@@ -3,7 +3,7 @@
 Status: draft, awaiting confirmation. Field names and status codes may still change.
 
 - Schemas: `schema/run-request.schema.json`, `schema/run-result.schema.json`, `schema/error.schema.json`, `schema/health.schema.json`
-- Go types: `server/internal/contract/contract.go`
+- Source: the jace-s platform owns these schemas (`services/goose/schema/`) and the hub and runner; `schema/` here is a copy checked by the platform. Generated client types: `frontend/src/lib/generated/`.
 - Architecture: [Data Flow](../architecture/20-data-flow.md#run-request)
 
 ## Endpoints
