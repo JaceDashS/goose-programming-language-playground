@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/error.schema.json",
+  "title": "ErrorResponse",
+  "description": "Body of every non-2xx response from the hub, the runner and the Vercel fallback.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["invalid_request", "too_large", "forbidden_origin", "turnstile_failed", "rate_limited", "busy", "use_primary", "unavailable", "internal"],
+          "description": "invalid_request 400, too_large 413, forbidden_origin 403, turnstile_failed 403, rate_limited 429, busy 503 (run slots full: fall back), use_primary 409 (fallback refuses while on-prem is healthy), unavailable 503 (this backend cannot run code now), internal 500."
+        },
+        "message": { "type": "string" }
+      }
+    }
+  },
+  "examples": [
+    { "error": { "code": "busy", "message": "All run slots are in use." } }
+  ]
+}

@@ -9,6 +9,10 @@ Status: early implementation. Start from [docs/00-index.md](docs/00-index.md).
 | Path | Contents |
 | --- | --- |
 | `docs/` | Specs, architecture, design, and test scenarios |
+| `schema/` | JSON schemas shared by the browser, hub and runner |
+| `server/` | Go module: `cmd/hub`, `cmd/runner`, `internal/` |
+| `runimage/` | Run container image (Goose release + run script) |
+| `deploy/` | Compose file for the on-prem hub and runner |
 
 ## License
 

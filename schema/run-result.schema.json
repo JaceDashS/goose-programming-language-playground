@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/run-result.schema.json",
+  "title": "RunResult",
+  "description": "Result of one run. Returned by the runner, the hub and the Vercel fallback, and sent to the browser in runFinished.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome", "exitCode", "stdout", "stderr", "diagnostics", "truncated", "durationMs", "backend"],
+  "properties": {
+    "outcome": {
+      "type": "string",
+      "enum": ["compile_error", "exited", "timeout", "output_limit", "killed"],
+      "description": "compile_error: goose check rejected the program and nothing ran. exited: the program ended on its own (see exitCode). timeout: stopped at the time limit. output_limit: stopped after the output cap. killed: stopped by the memory or process limit."
+    },
+    "exitCode": {
+      "type": ["integer", "null"],
+      "description": "Program exit code when outcome is exited, otherwise null."
+    },
+    "stdout": { "type": "string" },
+    "stderr": { "type": "string" },
+    "diagnostics": {
+      "type": "array",
+      "description": "Errors and warnings from goose check --diagnostics json. Empty when there are none.",
+      "items": { "$ref": "#/$defs/diagnostic" }
+    },
+    "truncated": { "type": "boolean", "description": "True when stdout or stderr was cut at the output cap." },
+    "durationMs": { "type": "integer", "minimum": 0, "description": "Wall time inside the container, check and compile included." },
+    "backend": { "type": "string", "enum": ["onprem", "sandbox"] }
+  },
+  "$defs": {
+    "diagnostic": {
+      "type": "object",
+      "required": ["severity", "message"],
+      "properties": {
+        "severity": { "type": "string", "enum": ["error", "warning"] },
+        "message": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "col": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 },
+        "endCol": { "type": "integer", "minimum": 1 },
+        "text": { "type": "string", "description": "The whole message as a terminal would show it." }
+      }
+    }
+  },
+  "examples": [
+    { "outcome": "exited", "exitCode": 0, "stdout": "hello\n", "stderr": "", "diagnostics": [], "truncated": false, "durationMs": 182, "backend": "onprem" },
+    { "outcome": "compile_error", "exitCode": null, "stdout": "", "stderr": "", "diagnostics": [{ "severity": "error", "message": "expected a value of type i32, got const u8[:]", "line": 1, "col": 26, "endLine": 1, "endCol": 29 }], "truncated": false, "durationMs": 40, "backend": "onprem" },
+    { "outcome": "timeout", "exitCode": null, "stdout": "", "stderr": "", "diagnostics": [], "truncated": false, "durationMs": 10000, "backend": "onprem" }
+  ]
+}

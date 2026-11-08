@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/socket-message.schema.json",
+  "title": "SocketMessage",
+  "description": "Fixed allow-list of WebSocket messages between the browser and the hub. Any other message is dropped. The browser never executes received code.",
+  "oneOf": [
+    { "$ref": "#/$defs/hello" },
+    { "$ref": "#/$defs/setCode" },
+    { "$ref": "#/$defs/getCode" },
+    { "$ref": "#/$defs/codeSnapshot" },
+    { "$ref": "#/$defs/runStarted" },
+    { "$ref": "#/$defs/runFinished" },
+    { "$ref": "#/$defs/aiActivity" },
+    { "$ref": "#/$defs/disconnect" }
+  ],
+  "$defs": {
+    "hello": {
+      "description": "hub -> browser, right after connect. Issues the session token.",
+      "type": "object", "additionalProperties": false, "required": ["type", "sessionToken"],
+      "properties": { "type": { "const": "hello" }, "sessionToken": { "type": "string", "minLength": 32 } }
+    },
+    "setCode": {
+      "description": "hub -> browser. Replace the editor content (AI set_code).",
+      "type": "object", "additionalProperties": false, "required": ["type", "code"],
+      "properties": { "type": { "const": "setCode" }, "code": { "type": "string", "maxLength": 65536 } }
+    },
+    "getCode": {
+      "description": "hub -> browser. Ask for the current editor content (AI get_code).",
+      "type": "object", "additionalProperties": false, "required": ["type", "requestId"],
+      "properties": { "type": { "const": "getCode" }, "requestId": { "type": "string" } }
+    },
+    "codeSnapshot": {
+      "description": "browser -> hub. Answer to getCode.",
+      "type": "object", "additionalProperties": false, "required": ["type", "requestId", "code"],
+      "properties": { "type": { "const": "codeSnapshot" }, "requestId": { "type": "string" }, "code": { "type": "string", "maxLength": 65536 } }
+    },
+    "runStarted": {
+      "description": "hub -> browser. The AI started a run of the current code.",
+      "type": "object", "additionalProperties": false, "required": ["type"],
+      "properties": { "type": { "const": "runStarted" } }
+    },
+    "runFinished": {
+      "description": "hub -> browser. Result of the AI-started run, shown in the output panel.",
+      "type": "object", "additionalProperties": false, "required": ["type", "result"],
+      "properties": { "type": { "const": "runFinished" }, "result": { "$ref": "run-result.schema.json" } }
+    },
+    "aiActivity": {
+      "description": "hub -> browser. Drives the AI connected indicator.",
+      "type": "object", "additionalProperties": false, "required": ["type", "connected"],
+      "properties": { "type": { "const": "aiActivity" }, "connected": { "type": "boolean" } }
+    },
+    "disconnect": {
+      "description": "browser -> hub. Revoke the session token now.",
+      "type": "object", "additionalProperties": false, "required": ["type"],
+      "properties": { "type": { "const": "disconnect" } }
+    }
+  }
+}

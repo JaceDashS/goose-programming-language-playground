@@ -40,3 +40,12 @@
 - Normal: On-prem is available, so both the AI agent and runs work.
 - Degraded: On-prem is busy or down. The AI agent is unavailable; runs go to the Vercel fallback.
 - Outage: Both on-prem and Vercel are unavailable. Only the editor works.
+
+## Run Result
+- Definition: The outcome of one run, with output and compiler diagnostics. The same shape comes from the runner, the hub and the Vercel fallback.
+- Code: `RunResult` (`server/internal/contract`), `schema/run-result.schema.json`
+- Example: A program that does not compile returns `outcome: "compile_error"` with a diagnostic at the failing line, and nothing runs.
+
+## Run Slot
+- Definition: One of the runner's concurrent run places (2 by default). When all are in use, the hub answers `busy` and the browser falls back.
+- Avoid: "worker" (Goose uses that word for its threads)

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/run-request.schema.json",
+  "title": "RunRequest",
+  "description": "Body of POST /goose/run (hub), POST /run (runner, internal) and POST /api/run (Vercel fallback).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Goose source of a single root file. At most 65536 UTF-8 bytes; the byte limit is enforced by the server.",
+      "maxLength": 65536
+    },
+    "turnstileToken": {
+      "type": "string",
+      "description": "Cloudflare Turnstile response token. Ignored by the runner. Required by the hub and the fallback once Turnstile is enabled."
+    }
+  },
+  "examples": [
+    { "code": "fn main() {\n    print(\"hello\");\n}\n", "turnstileToken": "0.abc" }
+  ]
+}

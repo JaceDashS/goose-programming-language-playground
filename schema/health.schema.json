@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://goose-playground.jace-s.com/schema/health.schema.json",
+  "title": "Health",
+  "description": "Body of GET /goose/health (hub) and GET /health (runner, internal). The browser derives the service state from the hub's answer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["runner", "freeRunSlots", "agentAvailable"],
+  "properties": {
+    "runner": { "type": "string", "enum": ["up", "down"] },
+    "freeRunSlots": { "type": "integer", "minimum": 0 },
+    "agentAvailable": { "type": "boolean", "description": "False when the runner is down or the agent session cap is full." }
+  },
+  "examples": [
+    { "runner": "up", "freeRunSlots": 1, "agentAvailable": true }
+  ]
+}

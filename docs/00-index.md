@@ -6,5 +6,10 @@ Implementation has started (2026-11-08). Remaining open items are decided during
 
 ## Documents
 
+- [Specs](specs/00-index.md) — What each feature must do
+- [Design](design/00-index.md) — How the code implements each feature
 - [Glossary](10-glossary.md) — Project terms: runner, hub, session token, service state, and others
 - [Architecture](architecture/00-index.md) — Overall structure, request flow, decisions, and open items
+- [API](api/00-index.md) — Run and health endpoints, error codes, and the session socket messages
+- [Testing](testing/00-index.md) — Test strategy and scenarios
+- [Guides](guides/00-index.md) — Local run and other procedures
