@@ -52,7 +52,10 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
       <ol>
         <li>Open a new session of an AI agent that runs commands in your own terminal, such as Claude Code or Codex.</li>
         <li>Paste the starter prompt and wait until the agent replies &quot;Connected&quot;.</li>
-        <li>Ask for a program. The agent may ask to run curl or a short script; allow it.</li>
+        <li>
+          Ask for a program. The agent asks to run curl or a short script; allow it. Codex runs commands in a sandbox
+          without internet access, so approve running the request outside the sandbox when it asks.
+        </li>
       </ol>
       <p>
         Chat apps (ChatGPT, claude.ai) and cloud sessions cannot send these requests, because their sandboxes block

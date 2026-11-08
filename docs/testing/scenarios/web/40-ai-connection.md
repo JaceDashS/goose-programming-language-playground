@@ -72,3 +72,9 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Input: A browser with Korean as its language, an AI action at 05:51 local time, a login attempt with empty fields.
 - Expected result: "AI connected: ran the code at 05:51 AM." with no Korean text anywhere on the page; Google's button and the browser check in English; "Enter your username and password." instead of the browser's message. Checked in Edge with locale ko-KR on 2026-11-09 against a local hub.
 - Test: `AiPanel.test.tsx` → "formats times in English whatever the browser language is", "asks for both login fields in English instead of the browser's validation message".
+
+### Real Terminal Agents
+- Input: The panel's starter prompt from a connected local tab (local hub, runner and run image) plus "implement a function that returns the first n square numbers, with tests in the program", given to Claude Code (`claude -p`, empty folder) and to Codex 0.167 (`codex exec`) on Windows.
+- Steps: Each agent confirms the connection, reads the docs, posts set_code, check and run with curl.
+- Expected result: Both reply "Connected" with the first editor line, put the program in the editor and report five PASS lines and "5/5 tests passed"; Claude Code leaves no files in its folder. Codex chose PowerShell with curl.exe on its own. Observed on 2026-11-09.
+- Codex limit: its Windows sandbox blocks outside addresses (`curl https://api.jace-s.com/...` exits at once; `sandbox_workspace_write.network_access=true` did not change it), while local addresses work. Outside the sandbox the same command returns the health JSON. The panel therefore tells Codex users to approve running the request outside the sandbox.
