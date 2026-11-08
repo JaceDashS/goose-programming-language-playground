@@ -12,6 +12,7 @@
   - Degraded: "The server is busy, so the AI connection (MCP) is unavailable. You can still use the playground."
   - Outage: "Temporary service outage." Run is disabled; editing still works.
 - The page rechecks the hub's health every 5 s while normal, and backs off to 5, 10, 20, 40, then 60 s while not normal.
+- Sample and Share use the toolbar theme: matching control height, rounded borders, light and dark colors, visible keyboard focus and wrapping at phone widths.
 - The layout works from phone width (one column) to desktop (editor and output side by side).
 - Not yet decided, so not part of this version: the editor component, Turnstile on the page, the AI connection panel's content.
 

@@ -13,12 +13,38 @@
 .bannerDegraded, .bannerOutage { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; }
 .bannerDegraded { background: var(--warn-bg); color: var(--warn-fg); }
 .bannerOutage { background: var(--err-bg); color: var(--err-fg); }
-.toolbar { display: flex; align-items: center; gap: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.run, .share, .sampleSelect {
+  min-height: 40px;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
 .run {
   background: var(--accent); color: var(--on-accent); border: 0; border-radius: 8px;
   padding: 8px 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
 }
 .run:disabled { opacity: 0.55; cursor: default; }
+.samplePicker { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; color: var(--muted); font-size: 0.85rem; }
+.selectWrap { position: relative; display: flex; width: 208px; min-width: 0; }
+.selectWrap::after {
+  content: ""; position: absolute; right: 15px; top: 50%; width: 7px; height: 7px;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg); pointer-events: none;
+}
+.sampleSelect, .share {
+  background: var(--panel); color: var(--fg); border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer;
+}
+.sampleSelect { appearance: none; width: 100%; min-width: 0; padding: 8px 36px 8px 12px; text-overflow: ellipsis; }
+.sampleSelect option { background: var(--panel); color: var(--fg); }
+.share { padding: 8px 18px; font-weight: 600; }
+.sampleSelect:hover, .share:hover { border-color: var(--accent); background: var(--bg); }
+.run:focus-visible, .sampleSelect:focus-visible, .share:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.share:active { background: var(--border); }
+.shareMessage { min-width: 0; color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+.shareMessage:empty { display: none; }
 .hint { color: var(--muted); font-size: 0.85rem; }
 .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 420px; }
 .editorPane, .outputPane {
@@ -42,6 +68,10 @@
   border: 1px dashed var(--border); border-radius: 8px;
 }
 @media (max-width: 760px) {
+  .toolbar { gap: 8px; }
+  .samplePicker { flex: 1 1 200px; }
+  .selectWrap { flex: 1; width: auto; }
+  .shareMessage { flex-basis: 100%; }
   .panes { grid-template-columns: 1fr; }
   .editor { min-height: 280px; }
   .hint { display: none; }

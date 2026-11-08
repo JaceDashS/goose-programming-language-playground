@@ -37,3 +37,14 @@
 
 `Playground.tsx` also loads static release samples through the [Samples Design](20-samples.md).
 `Playground.tsx` restores hash code and copies shared links as described in [URL Sharing](30-url-sharing.md).
+
+## Toolbar Controls
+
+- Input: Existing theme variables, viewport width, keyboard focus and pointer interaction.
+- Output: Run, Sample and Share have a shared 40 px minimum height and matching rounded controls. Sample retains a native select with a decorative CSS chevron; Share uses a secondary outlined button. Both use the existing panel, text, border and accent variables in light and dark themes.
+- Code: frontend/src/components/Playground.tsx and frontend/src/components/Playground.module.css.
+- The toolbar wraps on small screens; the sample field can shrink and share feedback occupies its own mobile row. Empty feedback is hidden. Keyboard focus is outlined, and hover and pressed states use theme colors.
+- Example input: A 375 px viewport with focus on Sample.
+- Example steps: Tab to Sample, choose a sample, then focus and activate Share.
+- Expected result: Visible focus, readable themed controls, no horizontal overflow and an unchanged share workflow.
+- Scenarios: [Playground Page Scenarios](../../testing/scenarios/web/10-playground-page.md#toolbar-theme-and-responsive-layout).

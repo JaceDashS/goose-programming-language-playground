@@ -121,22 +121,24 @@ export default function Playground() {
         >
           {running ? "Running…" : "Run"}
         </button>
-        <label>
-          Sample{" "}
-          <select aria-label="Sample" value="" onChange={(e) => {
-            const sample = samples.find((s) => s.name === e.target.value);
-            if (!sample) return;
-            if (code !== loadedCode.current && !window.confirm("Replace your code with the sample?")) return;
-            edited.current = true;
-            loadedCode.current = sample.code;
-            setCode(sample.code);
-          }}>
-            <option value="" disabled>Choose a sample</option>
-            {samples.map((sample) => <option key={sample.name} value={sample.name}>{sample.name}</option>)}
-          </select>
+        <label className={styles.samplePicker}>
+          <span>Sample</span>
+          <span className={styles.selectWrap}>
+            <select className={styles.sampleSelect} aria-label="Sample" value="" onChange={(e) => {
+              const sample = samples.find((s) => s.name === e.target.value);
+              if (!sample) return;
+              if (code !== loadedCode.current && !window.confirm("Replace your code with the sample?")) return;
+              edited.current = true;
+              loadedCode.current = sample.code;
+              setCode(sample.code);
+            }}>
+              <option value="" disabled>Choose a sample</option>
+              {samples.map((sample) => <option key={sample.name} value={sample.name}>{sample.name}</option>)}
+            </select>
+          </span>
         </label>
-        <button onClick={share}>Share</button>
-        <span role="status">{shareMessage}</span>
+        <button className={styles.share} onClick={share}>Share</button>
+        <span className={styles.shareMessage} role="status">{shareMessage}</span>
         <span className={styles.hint}>Ctrl+Enter</span>
       </div>
 

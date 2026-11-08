@@ -21,3 +21,7 @@ flowchart LR
 - Input: Release sample selection and current editor text
 - Steps: Pick sample then compare with the last loaded text; confirm replacement of edits; load static sample text
 - Expected result: Selecting 07_sieve after editing hello asks for confirmation and Run prints 664579 primes up to 10000000
+
+## Toolbar Appearance
+
+The native sample picker is wrapped by samplePicker and selectWrap and uses sampleSelect. Its CSS chevron is decorative and does not intercept pointer input. See [Toolbar Controls](10-playground-page.md#toolbar-controls).

@@ -21,3 +21,7 @@ flowchart LR
 - Input: Current source text and page URL or code hash
 - Steps: Encode UTF-8 then deflate-raw then unpadded base64url; check complete URL length; inflate incrementally up to 65536 bytes when opening
 - Expected result: Korean source survives sharing; invalid or oversized input shows the specified message
+
+## Toolbar Appearance
+
+The Share button uses the themed secondary share class; shareMessage styles the status feedback and hides it when empty. See [Toolbar Controls](10-playground-page.md#toolbar-controls).

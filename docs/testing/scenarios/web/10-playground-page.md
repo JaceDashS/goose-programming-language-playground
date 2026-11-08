@@ -63,3 +63,10 @@
 - Input: Public hello program with the primary runner running under gVisor.
 - Steps: Open the deployed playground and press Run.
 - Expected result: Exited with code 0, Hello, Goose output and server status. GET /goose/health reports runner up with free slots. A direct POST to Vercel fallback returns use_primary without creating a sandbox. Verified in the production browser and HTTP endpoints on 2026-11-08.
+
+## Toolbar Theme And Responsive Layout
+
+- Input: Desktop and phone viewports, light and dark themes, Sample dropdown and Share button.
+- Steps: Inspect matching control heights, hover the controls, tab through their focus states, select 07_sieve and share the code.
+- Expected result: Both controls match the toolbar theme, dropdown text and chevron stay readable, keyboard focus is visible, the mobile toolbar wraps without horizontal overflow, sample selection and sharing keep working.
+- Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
