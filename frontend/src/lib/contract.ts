@@ -1,56 +1,12 @@
-// Types for the JSON contracts in /schema. Keep in sync with the schema files;
-// the Go side is checked by server/internal/contract/contract_test.go.
+import type { RunResult } from "./generated/run-result";
+import type { ErrorResponse } from "./generated/error";
 
+export type { RunRequest } from "./generated/run-request";
+export type { RunResult, Diagnostic } from "./generated/run-result";
+export type { ErrorResponse } from "./generated/error";
+export type { Health } from "./generated/health";
+export type Outcome = RunResult["outcome"];
+export type Backend = RunResult["backend"];
+export type ErrorCode = ErrorResponse["error"]["code"];
 export const MAX_CODE_BYTES = 65536;
-
-export interface RunRequest {
-  code: string;
-  turnstileToken?: string;
-}
-
-export type Outcome = "compile_error" | "exited" | "timeout" | "output_limit" | "killed";
-export type Backend = "onprem" | "sandbox";
-
-export interface Diagnostic {
-  severity: "error" | "warning";
-  message: string;
-  line?: number;
-  col?: number;
-  endLine?: number;
-  endCol?: number;
-  text?: string;
-}
-
-export interface RunResult {
-  outcome: Outcome;
-  exitCode: number | null;
-  stdout: string;
-  stderr: string;
-  diagnostics: Diagnostic[];
-  truncated: boolean;
-  durationMs: number;
-  backend: Backend;
-}
-
-export type ErrorCode =
-  | "invalid_request"
-  | "too_large"
-  | "forbidden_origin"
-  | "turnstile_failed"
-  | "rate_limited"
-  | "busy"
-  | "use_primary"
-  | "unavailable"
-  | "internal";
-
-export interface ErrorResponse {
-  error: { code: ErrorCode; message: string };
-}
-
-export interface Health {
-  runner: "up" | "down";
-  freeRunSlots: number;
-  agentAvailable: boolean;
-}
-
 export type ServiceState = "normal" | "degraded" | "outage";

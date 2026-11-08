@@ -16,3 +16,6 @@
 - Input: Someone adds `"memoryKb"` to `run-result.schema.json` without regenerating.
 - Steps: `npm test` in `frontend/`.
 - Result: The freshness test fails and names `run-result.schema.json`.
+
+- Design: [Contract Types Design](../../design/web/15-contract-types.md)
+- Scenarios: [Contract Types Scenarios](../../testing/scenarios/web/15-contract-types.md)

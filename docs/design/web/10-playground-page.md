@@ -28,9 +28,10 @@
 - Endpoints: `frontend/src/lib/endpoints.ts`. `NEXT_PUBLIC_HUB_URL` overrides the hub origin for local development.
 - Layout: header, banner, toolbar, two panes (one column under 760 px), AI panel. Colors are CSS variables with a dark scheme.
 - The editor is a plain `textarea` until the editor component is chosen.
-- Contract types: `frontend/src/lib/contract.ts` mirrors `schema/`.
+- Contract types: `frontend/src/lib/contract.ts` re-exports generated schema types. See [Contract Types](15-contract-types.md).
 
 ## Fallback Route
 
 - Code: `frontend/src/app/api/run/route.ts`. Currently a stub that answers 503 `unavailable`.
 - Spec for the implementation: [Vercel Fallback](../../specs/run/30-vercel-fallback.md).
+
