@@ -29,6 +29,8 @@ Scenario:
 
 ## Fallback
 
+Implementation: [Vercel Fallback Design](../design/run/30-vercel-fallback.md). The provisional quota counter is shared within a process; a durable cross-instance store remains open.
+
 If on-prem answers 503 (busy) or the connection fails within the short timeout, the browser calls Vercel `/api/run`. Vercel first checks on-prem itself, and refuses with "use the primary" if on-prem is healthy and has capacity. This keeps the Sandbox quota from being consumed by direct attacks.
 
 ```mermaid

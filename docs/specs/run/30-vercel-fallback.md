@@ -1,7 +1,7 @@
 # Vercel Fallback
 
 - Related: [Run API](../../api/10-run.md), [Code Run](10-code-run.md), [Data Flow](../../architecture/20-data-flow.md#fallback)
-- Current stub: `frontend/src/app/api/run/route.ts`
+- Route: `frontend/src/app/api/run/route.ts`
 
 ## Requirements
 
@@ -21,3 +21,6 @@
 - Input: The hub's health says `freeRunSlots: 1`, and a request arrives at `/api/run`.
 - Steps: the primary check sees a healthy hub.
 - Result: 409 `use_primary`; no sandbox is created and the cap counters do not change.
+
+- Design: [Vercel Fallback Design](../../design/run/30-vercel-fallback.md)
+- Scenarios: [Vercel Fallback Scenarios](../../testing/scenarios/run/30-vercel-fallback.md)

@@ -20,4 +20,3 @@
 - Steps: Open the page; for valid code press Share.
 - Expected result: Valid code replaces hello and clipboard receives the matching URL; invalid code leaves hello and shows the error.
 - Test: frontend/src/components/Playground.test.tsx
-

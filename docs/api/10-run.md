@@ -61,3 +61,5 @@ A connection failure or a timeout on the hub is treated like `busy`.
 - Input: `POST /goose/run` with `{"code": "fn main() { print(1 + ); }"}` while one run slot is free.
 - Steps: The hub checks origin and size, asks the runner, and the runner's `goose check` fails.
 - Result: 200 with `outcome: "compile_error"`, `exitCode: null`, and one `diagnostics` entry pointing at line 1.
+
+Fallback validation, limits and configuration are documented in [Vercel Fallback Design](../design/run/30-vercel-fallback.md).

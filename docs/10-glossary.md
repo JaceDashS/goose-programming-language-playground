@@ -54,3 +54,8 @@
 - Definition: An unmodified Goose release program bundled as static editor text.
 - Code: frontend/src/samples/index.ts
 
+
+## Run Counter
+- Definition: Atomic admission accounting for sandbox runs in UTC hourly and daily windows.
+- Code: RunCounter, MemoryRunCounter
+- Note: The initial implementation shares counts within one server process.

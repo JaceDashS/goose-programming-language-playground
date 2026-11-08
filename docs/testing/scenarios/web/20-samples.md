@@ -55,4 +55,3 @@
 - Steps: Cancel replacement, then select again and confirm.
 - Expected result: Cancel preserves edits; confirmation loads the exact sample source.
 - Test: frontend/src/components/Playground.test.tsx
-
