@@ -6,7 +6,7 @@
 
 ## Run Client
 
-- Input: code, endpoints (`primary`, `fallback`), optional Turnstile token and `fetch`.
+- Input: code, endpoints (`primary`, `fallback`), optional `getToken()` that returns a fresh Turnstile token, and `fetch`.
 - Output: `RunOutcome`: `{kind: "result", result, state}` or `{kind: "error", code, message, state}`; `state` is the service state this attempt observed.
 - Code: `frontend/src/lib/runGoose.ts` → `runGoose()`.
 - Steps:
@@ -14,7 +14,18 @@
   2. Success → state `normal`. Error `busy`, `unavailable`, a 5xx without JSON, or a network failure → step 3. Any other error → shown, no fallback.
   3. POST to the fallback. Success → state `degraded`.
   4. Fallback `use_primary` → retry the primary once. Fallback `unavailable` or network failure → state `outage`.
+- Every POST (primary, fallback, retry) first calls `getToken()` when it is given. A failure there returns `turnstile_failed` without sending. Without `getToken()` the body is only `{code}`.
 - Scenario: Primary network failure → fallback 200 → the result is shown with `backend: "sandbox"` and state `degraded`.
+
+## Turnstile Widget
+
+- Input: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` at build time, a container element, `window.turnstile` loaded from `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit`.
+- Output: `getToken()` resolving with a single-use token, or rejecting when the check fails or times out (60 s).
+- Code: `frontend/src/lib/turnstile.ts` → `turnstileSiteKey()`, `loadTurnstile()`, `createTurnstileWidget()`; `Playground.tsx` renders the container and passes `getToken` to `runGoose()`.
+- The widget is rendered once with `execution: "execute"` and `appearance: "interaction-only"`. Each `getToken()` resets and executes it; a newer request rejects the older pending one, and an old timer cannot cancel a newer request.
+- No site key → no script, no container, no token. The hub and the fallback skip verification while their `TURNSTILE_SECRET` is empty, so the order of rollout is page first, then secrets.
+- Scenario: Hub `busy` → `getToken()` is called again → the fallback receives a token the hub never saw.
+- All scenarios: [Turnstile Tokens](../../testing/scenarios/web/10-playground-page.md#turnstile-tokens).
 
 ## Service State
 

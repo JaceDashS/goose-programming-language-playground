@@ -14,10 +14,17 @@
 - The page rechecks the hub's health every 5 s while normal, and backs off to 5, 10, 20, 40, then 60 s while not normal.
 - Sample and Share use the toolbar theme: matching control height, rounded borders, light and dark colors, visible keyboard focus and wrapping at phone widths.
 - The layout works from phone width (one column) to desktop (editor and output side by side).
-- Not yet decided, so not part of this version: the editor component, Turnstile on the page, the AI connection panel's content.
+- Turnstile: when the build has `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, every run request (hub, fallback, and the retry after `use_primary`) carries its own fresh Turnstile token, because a token is single use. The widget appears only when the visitor must interact. If no token can be obtained, the run is not sent and the page shows `turnstile_failed`. Without the site key, no Turnstile script is loaded and runs carry no token.
+- Not yet decided, so not part of this version: the editor component, the AI connection panel's content.
 
 ## Example
 
 - Input: The hub answers 503 `busy` when the user presses Run.
 - Steps: The page sends the same code to `/api/run`, which runs it in Vercel Sandbox.
 - Result: The output appears marked "backup server", and the Degraded banner shows.
+
+## Turnstile Example
+
+- Input: The site key is built in, Turnstile is configured on the hub and the fallback, and the hub answers 503 `busy`.
+- Steps: The page gets token A for the hub, which verifies and spends it, then gets token B for `/api/run`.
+- Result: The fallback verifies token B and runs the code; the output shows "backup server".

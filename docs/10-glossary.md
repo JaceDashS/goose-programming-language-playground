@@ -59,3 +59,8 @@
 - Definition: Atomic admission accounting for sandbox runs in UTC hourly and daily windows.
 - Code: RunCounter, MemoryRunCounter
 - Note: The initial implementation shares counts within one server process.
+
+## Turnstile Token
+- Definition: A single-use proof from Cloudflare Turnstile that a run request came from a real browser. The hub and the fallback verify it only when their `TURNSTILE_SECRET` is set.
+- Code: `frontend/src/lib/turnstile.ts`, `RunRequest.turnstileToken`.
+- Example: After the hub spends a token and answers `busy`, the page gets a new token for `/api/run`.

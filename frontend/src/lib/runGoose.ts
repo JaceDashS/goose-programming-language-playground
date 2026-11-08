@@ -9,7 +9,11 @@ export interface RunEndpoints {
 }
 
 export interface RunOptions {
-  turnstileToken?: string;
+  /**
+   * Returns a fresh Turnstile token for each request. Tokens are single use, so the hub, the
+   * fallback and a retry each get their own. Omit it when Turnstile is not configured.
+   */
+  getToken?: () => Promise<string>;
   fetch?: typeof fetch;
   /** Abort the primary request after this long and treat it as unreachable. */
   primaryTimeoutMs?: number;
@@ -58,23 +62,39 @@ async function post(
   }
 }
 
+/** A request body with a new token, or an attempt that failed before sending. */
+async function bodyFor(code: string, opts: RunOptions): Promise<{ code: string; turnstileToken?: string } | Attempt> {
+  if (!opts.getToken) return { code };
+  try {
+    return { code, turnstileToken: await opts.getToken() };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "The browser check failed.";
+    return { ok: false, code: "turnstile_failed", message };
+  }
+}
+
+async function send(url: string, code: string, opts: RunOptions, f: typeof fetch, timeoutMs: number | undefined): Promise<Attempt> {
+  const body = await bodyFor(code, opts);
+  if ("ok" in body) return body;
+  return post(url, body, f, timeoutMs);
+}
+
 export async function runGoose(code: string, endpoints: RunEndpoints, opts: RunOptions = {}): Promise<RunOutcome> {
   const f = opts.fetch ?? fetch;
-  const body = { code, turnstileToken: opts.turnstileToken };
   const timeout = opts.primaryTimeoutMs ?? DEFAULT_PRIMARY_TIMEOUT_MS;
 
-  const first = await post(endpoints.primary, body, f, timeout);
+  const first = await send(endpoints.primary, code, opts, f, timeout);
   if (first.ok) return { kind: "result", result: first.result, state: "normal" };
   if (!FALL_BACK_ON.has(first.code)) {
     return { kind: "error", code: first.code, message: first.message, state: "normal" };
   }
 
-  const second = await post(endpoints.fallback, body, f, undefined);
+  const second = await send(endpoints.fallback, code, opts, f, undefined);
   if (second.ok) return { kind: "result", result: second.result, state: "degraded" };
 
   if (second.code === "use_primary") {
     // The fallback saw a healthy primary: the first failure was momentary. Retry once.
-    const retry = await post(endpoints.primary, body, f, timeout);
+    const retry = await send(endpoints.primary, code, opts, f, timeout);
     if (retry.ok) return { kind: "result", result: retry.result, state: "normal" };
     return { kind: "error", code: retry.code, message: retry.message, state: "degraded" };
   }

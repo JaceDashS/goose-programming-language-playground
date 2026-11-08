@@ -7,6 +7,7 @@ import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/ser
 import { endpoints } from "@/lib/endpoints";
 import { encodeShare, decodeShare, SHARE_INVALID } from "@/lib/share";
 import { samples } from "@/samples";
+import { createTurnstileWidget, loadTurnstile, turnstileSiteKey, type TurnstileWidget } from "@/lib/turnstile";
 import OutputPanel from "./OutputPanel";
 import styles from "./Playground.module.css";
 
@@ -25,6 +26,22 @@ export default function Playground() {
   const loadedCode = useRef(HELLO);
   const edited = useRef(false);
   const [shareMessage, setShareMessage] = useState("");
+  const siteKey = turnstileSiteKey();
+  const turnstileBox = useRef<HTMLDivElement>(null);
+  const turnstile = useRef<Promise<TurnstileWidget> | null>(null);
+
+  // Turnstile is on only when a site key is built in. Without it, runs carry no token.
+  useEffect(() => {
+    const box = turnstileBox.current;
+    if (!siteKey || !box) return;
+    const ready = loadTurnstile().then(api => createTurnstileWidget(api, box, siteKey));
+    ready.catch(() => undefined);
+    turnstile.current = ready;
+    return () => {
+      turnstile.current = null;
+      ready.then(widget => widget.dispose(), () => undefined);
+    };
+  }, [siteKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,14 +102,20 @@ export default function Playground() {
   const run = useCallback(async () => {
     setRunning(true);
     try {
-      const out = await runGoose(code, endpoints);
+      const getToken = siteKey
+        ? async () => {
+          if (!turnstile.current) throw new Error("The browser check is not ready yet.");
+          return (await turnstile.current).getToken();
+        }
+        : undefined;
+      const out = await runGoose(code, endpoints, { getToken });
       fallbackDown.current = out.state === "outage";
       setState(out.state);
       setOutcome(out);
     } finally {
       setRunning(false);
     }
-  }, [code]);
+  }, [code, siteKey]);
 
   const banner = BANNER[state];
   const canRun = state !== "outage" && !running;
@@ -141,6 +164,8 @@ export default function Playground() {
         <span className={styles.shareMessage} role="status">{shareMessage}</span>
         <span className={styles.hint}>Ctrl+Enter</span>
       </div>
+
+      {siteKey && <div ref={turnstileBox} className={styles.turnstile} />}
 
       <main className={styles.panes}>
         <section className={styles.editorPane} aria-label="Editor">

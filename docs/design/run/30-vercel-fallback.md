@@ -51,5 +51,5 @@ flowchart TD
 ## Open Questions
 
 - Which shared counter store should replace the explicitly provisional process-local implementation for multi-instance deployments?
-- A Turnstile token verified by the hub is single-use. Should the browser obtain a fresh token before fallback after a busy primary? This task preserves the specified verification contract and does not modify the protected run client.
+- Resolved 2026-11-09: the browser obtains a fresh token for the fallback request; see [Playground Page Design](../web/10-playground-page.md#turnstile-widget).
 - The deployed SDK sandbox has passed hello execution; the production smoke test is recorded in the deployment operations document.

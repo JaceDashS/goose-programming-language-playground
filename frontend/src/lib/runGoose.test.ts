@@ -77,6 +77,58 @@ describe("runGoose", () => {
     expect(calls).toEqual([endpoints.primary, endpoints.fallback, endpoints.primary]);
   });
 
+  it("sends no token field when Turnstile is not configured", async () => {
+    const bodies: unknown[] = [];
+    const f = (async (_url: string, init: RequestInit) => {
+      bodies.push(JSON.parse(init.body as string));
+      return Response.json(result("onprem"));
+    }) as unknown as typeof fetch;
+    await runGoose("x", endpoints, { fetch: f });
+    expect(bodies).toEqual([{ code: "x" }]);
+  });
+
+  it("asks for a fresh token for the fallback after a busy primary", async () => {
+    const sent: Array<[string, unknown]> = [];
+    const replies: Record<string, Response[]> = {
+      [endpoints.primary]: [Response.json(err("busy"), { status: 503 })],
+      [endpoints.fallback]: [Response.json(result("sandbox"))],
+    };
+    const f = (async (url: string, init: RequestInit) => {
+      sent.push([url, JSON.parse(init.body as string).turnstileToken]);
+      return replies[url].shift()!;
+    }) as unknown as typeof fetch;
+    let n = 0;
+    const getToken = async () => `token-${++n}`;
+    const out = await runGoose("x", endpoints, { fetch: f, getToken });
+    expect(out).toMatchObject({ kind: "result", state: "degraded" });
+    expect(sent).toEqual([[endpoints.primary, "token-1"], [endpoints.fallback, "token-2"]]);
+  });
+
+  it("uses a third token when the fallback sends it back to the primary", async () => {
+    const tokens: unknown[] = [];
+    const replies: Record<string, Response[]> = {
+      [endpoints.primary]: [Response.json(err("busy"), { status: 503 }), Response.json(result("onprem"))],
+      [endpoints.fallback]: [Response.json(err("use_primary"), { status: 409 })],
+    };
+    const f = (async (url: string, init: RequestInit) => {
+      tokens.push(JSON.parse(init.body as string).turnstileToken);
+      return replies[url].shift()!;
+    }) as unknown as typeof fetch;
+    let n = 0;
+    await runGoose("x", endpoints, { fetch: f, getToken: async () => `t${++n}` });
+    expect(tokens).toEqual(["t1", "t2", "t3"]);
+  });
+
+  it("reports turnstile_failed without sending when no token can be obtained", async () => {
+    const { f, calls } = fakeFetch({});
+    const out = await runGoose("x", endpoints, {
+      fetch: f,
+      getToken: async () => { throw new Error("The browser check timed out."); },
+    });
+    expect(out).toMatchObject({ kind: "error", code: "turnstile_failed", message: "The browser check timed out.", state: "normal" });
+    expect(calls).toEqual([]);
+  });
+
   it("reports an outage when both are unavailable", async () => {
     const { f } = fakeFetch({
       [endpoints.primary]: ["network"],

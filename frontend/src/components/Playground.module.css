@@ -76,3 +76,9 @@
   .editor { min-height: 280px; }
   .hint { display: none; }
 }
+
+/* Shown by Turnstile only when the visitor must interact with the check. */
+.turnstile {
+  display: flex;
+  justify-content: center;
+}

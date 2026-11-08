@@ -70,3 +70,24 @@
 - Steps: Inspect matching control heights, hover the controls, tab through their focus states, select 07_sieve and share the code.
 - Expected result: Both controls match the toolbar theme, dropdown text and chevron stay readable, keyboard focus is visible, the mobile toolbar wraps without horizontal overflow, sample selection and sharing keep working.
 - Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
+
+## Turnstile Tokens
+
+- Input: Site key built in; the hub answers 503 `busy`, then the fallback answers 200.
+- Steps: `runGoose()` calls `getToken()` before each request.
+- Expected result: The hub gets `token-1` and the fallback gets `token-2`. When the fallback answers `use_primary`, the retry gets a third token.
+- Test: `frontend/src/lib/runGoose.test.ts` → "asks for a fresh token for the fallback after a busy primary", "uses a third token when the fallback sends it back to the primary".
+
+## No Turnstile Site Key
+
+- Input: A build without `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, hub without `TURNSTILE_SECRET`.
+- Steps: Load the page and press Run.
+- Expected result: No Turnstile script is requested and the request body is only `{code}`; the run works as before.
+- Test: `Playground.test.tsx` → "runs without loading Turnstile when no site key is built in"; `runGoose.test.ts` → "sends no token field when Turnstile is not configured".
+
+## Browser Check Fails
+
+- Input: Site key built in; the widget reports an error, or no token arrives within 60 s.
+- Steps: Press Run.
+- Expected result: No run request is sent and the output shows `turnstile_failed` with "The browser check failed." or "The browser check timed out."
+- Test: `runGoose.test.ts` → "reports turnstile_failed without sending when no token can be obtained"; `turnstile.test.ts`.
