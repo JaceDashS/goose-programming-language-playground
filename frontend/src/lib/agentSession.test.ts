@@ -188,11 +188,16 @@ describe("parseHubMessage", () => {
   });
 });
 
-it("starter prompt names the server, the token and the workflow", () => {
+it("starter prompt gives the token, the curl API and rules that hold for follow-up requests", () => {
   const p = starterPrompt("t".repeat(64), "https://api.jace-s.com/goose/mcp");
   expect(p).toContain("Session token: " + "t".repeat(64));
-  expect(p).toContain("https://api.jace-s.com/goose/mcp");
-  expect(p).toContain("goose_docs");
-  expect(p).toContain("If the goose-playground tools are not available in this chat, stop");
-  expect(p.split("\n")).toHaveLength(6);
+  expect(p).toContain("POST https://api.jace-s.com/goose/mcp");
+  expect(p).toContain("curl -s -X POST https://api.jace-s.com/goose/mcp");
+  expect(p).toContain("No MCP setup is needed");
+  expect(p).toContain("This applies to every follow-up request too");
+  expect(p).toContain("There is no separate test runner");
+  for (const tool of ["goose_docs", "get_sample", "get_code", "set_code", "check", "run"]) expect(p).toContain(`- ${tool} {`);
+  expect(p).toContain('reply only "Connected"');
+  // The page is English: the prompt must not carry text from the browser's language.
+  expect(p).toMatch(/^[\x20-\x7e\n]*$/);
 });

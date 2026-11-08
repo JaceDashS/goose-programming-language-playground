@@ -22,8 +22,9 @@ const TOOL_LABEL: Record<string, string> = {
   check: "checked the code",
 };
 
-function time(d: Date): string {
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+/** The page is English, so times use an English format whatever the browser language is (05:51 AM). */
+export function time(d: Date): string {
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 }
 
 function duration(seconds: number): string {
@@ -43,25 +44,24 @@ async function copy(text: string, done: (message: string) => void) {
 export default function AiPanel({ state, available, loggedIn, onConnect, onDisconnect, onLogin }: Props) {
   const [message, setMessage] = useState("");
 
-  // The prompt alone does nothing: the AI needs the MCP server added and turned on in that chat.
-  const setup = (open: boolean) => (
+  // The starter prompt describes an HTTP API, so a terminal agent needs no setup; chat apps cannot
+  // send the requests from their sandboxes (goose D-0048).
+  const help = (open: boolean) => (
     <details className={styles.setup} open={open}>
-      <summary>Step 1: add the MCP server to your AI (once) and turn it on in the chat</summary>
+      <summary>How to use it</summary>
+      <ol>
+        <li>Open a new session of an AI agent that runs commands in your own terminal, such as Claude Code or Codex.</li>
+        <li>Paste the starter prompt and wait until the agent replies &quot;Connected&quot;.</li>
+        <li>Ask for a program. The agent may ask to run curl or a short script; allow it.</li>
+      </ol>
       <p>
-        Server URL: <code>{endpoints.mcp}</code>{" "}
+        Chat apps (ChatGPT, claude.ai) and cloud sessions cannot send these requests, because their sandboxes block
+        outside connections.
+      </p>
+      <p>
+        Optional: AI apps with MCP support can also add the server <code>{endpoints.mcp}</code>{" "}
         <button type="button" className={styles.small} onClick={() => copy(endpoints.mcp, setMessage)}>Copy URL</button>
       </p>
-      <ul>
-        <li>claude.ai: Settings → Connectors → Add custom connector, with this URL. No sign-in is needed.</li>
-        <li>
-          ChatGPT (web): Settings → Apps &amp; Connectors → Advanced settings → turn on Developer mode → Create, with this URL
-          and No authentication. Then, in each chat, open + → Developer mode and turn on goose-playground. Menu names differ
-          between ChatGPT versions.
-        </li>
-        <li>Claude Code: <code>claude mcp add --transport http goose-playground {endpoints.mcp}</code></li>
-        <li>Codex: <code>codex mcp add goose-playground --url {endpoints.mcp}</code></li>
-      </ul>
-      <p>Pasting only the starter prompt is not enough: if the AI does not list the goose-playground tools, it is not connected yet.</p>
     </details>
   );
 
@@ -69,7 +69,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
     const prompt = starterPrompt(state.token, endpoints.mcp);
     const activity = state.lastTool && state.lastActivity
       ? `AI connected: ${TOOL_LABEL[state.lastTool]} at ${time(state.lastActivity)}.`
-      : "Waiting for the AI. Step 2: paste the starter prompt into a chat where the goose-playground server is on, then ask for a program.";
+      : "Waiting for the AI. Paste the starter prompt into a new Claude Code or Codex session in your terminal.";
     return (
       <aside className={styles.aiPanel} aria-label="AI connection">
         <div className={styles.aiHead}>
@@ -79,7 +79,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
         </div>
         <label className={styles.field}>
           <span>Starter prompt</span>
-          <textarea className={styles.prompt} readOnly value={prompt} rows={6} onFocus={(e) => e.currentTarget.select()} />
+          <textarea className={styles.prompt} readOnly value={prompt} rows={8} onFocus={(e) => e.currentTarget.select()} />
         </label>
         <div className={styles.aiHead}>
           <button type="button" className={styles.run} onClick={() => copy(prompt, setMessage)}>Copy starter prompt</button>
@@ -89,7 +89,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
           Ends after {duration(state.idleSeconds)} without AI activity, at {time(state.expiresAt)} at the latest, or when you close this tab.
           {!state.loggedIn && <>{" "}<button type="button" className={styles.linkButton} onClick={onLogin}>Log in</button> for up to 8 hours.</>}
         </p>
-        {setup(!state.lastTool)}
+        {help(!state.lastTool)}
       </aside>
     );
   }
@@ -100,7 +100,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
       <div className={styles.aiHead}>
         <strong>AI connection</strong>
         <span className={styles.hint}>
-          {available ? "Let Claude or ChatGPT write, check and run code in this editor." : "Unavailable right now."}
+          {available ? "Let an AI agent in your terminal (Claude Code or Codex) write, check and run code in this editor." : "Unavailable right now."}
         </span>
         <button type="button" className={styles.run} onClick={onConnect} disabled={!available || state.status === "connecting"}>
           {state.status === "connecting" ? "Connecting…" : state.status === "ended" ? "Connect again" : "Connect AI"}
@@ -110,7 +110,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
       <p className={styles.hint}>
         {loggedIn ? "Logged in: a connection lasts up to 8 hours." : "Without logging in a connection lasts up to 2 hours."}
       </p>
-      {setup(false)}
+      {help(false)}
       <span className={styles.hint} role="status">{message}</span>
     </aside>
   );

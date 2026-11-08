@@ -43,6 +43,8 @@ export function createTurnstileWidget(
     sitekey: siteKey,
     execution: "execute",
     appearance: "interaction-only",
+    // Match the English page instead of the browser language.
+    language: "en",
     callback: (token: string) => settle(token),
     "error-callback": () => settle(null, "The browser check failed."),
     "timeout-callback": () => settle(null, "The browser check timed out."),

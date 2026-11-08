@@ -92,7 +92,8 @@ export default function GoogleButton({ client, remember, disabled, onBusyChange,
         identity.initialize({ client_id: config.clientId, nonce, auto_select: false, callback: ({ credential }) => void accept(credential) });
         container.replaceChildren();
         identity.renderButton(container, {
-          type: "standard", theme: "outline", size: "large", text: "continue_with",
+          // The page is English; without a locale Google renders the button in the browser language.
+          type: "standard", theme: "outline", size: "large", text: "continue_with", locale: "en",
           width: Math.min(320, container.clientWidth || 320),
         });
       } catch {

@@ -195,3 +195,27 @@ it("shows the signed-in account on load", async () => {
   render(<Playground />);
   expect(await screen.findByText("Jace")).toBeTruthy();
 });
+
+it("formats times in English whatever the browser language is", async () => {
+  const { time } = await import("./AiPanel");
+  expect(time(new Date(2026, 10, 9, 5, 51))).toBe("05:51 AM");
+  expect(time(new Date(2026, 10, 9, 17, 5))).toBe("05:05 PM");
+});
+
+it("explains the terminal agent workflow and keeps MCP optional", async () => {
+  stubFetch();
+  render(<Playground />);
+  await connect();
+  expect(screen.getByText(/Paste the starter prompt into a new Claude Code or Codex session/)).toBeTruthy();
+  expect(screen.getByText(/Chat apps \(ChatGPT, claude.ai\) and cloud sessions cannot send these requests/)).toBeTruthy();
+  expect((screen.getByLabelText("Starter prompt") as HTMLTextAreaElement).value).toContain("No MCP setup is needed");
+});
+
+it("asks for both login fields in English instead of the browser's validation message", async () => {
+  const f = stubFetch();
+  render(<Playground />);
+  fireEvent.click(await screen.findByRole("button", { name: "Log in" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Log in" }));
+  expect(await screen.findByText("Enter your username and password.")).toBeTruthy();
+  expect(f.mock.calls.some(([url]) => String(url).endsWith("/auth/login"))).toBe(false);
+});

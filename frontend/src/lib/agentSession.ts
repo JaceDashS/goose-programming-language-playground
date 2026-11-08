@@ -216,14 +216,44 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
   };
 }
 
-/** The starter prompt the user pastes into the AI (goose D-0039). */
-export function starterPrompt(token: string, mcpUrl: string): string {
-  return [
-    `You are connected to my Goose Playground editor through the "goose-playground" MCP server (${mcpUrl}).`,
-    `Session token: ${token}`,
-    "Call goose_docs first (topic \"playground\", then \"tutorial\"). Write code with set_code, then use check and run.",
-    "Edit the code in my editor; do not paste code into the chat.",
-    "If the goose-playground tools are not available in this chat, stop and ask me to add or turn on the MCP server; do not try to reach the URL any other way.",
-    "The token only works with these tools and ends when I close the playground tab.",
-  ].join("\n");
+/**
+ * The starter prompt the user pastes into a terminal AI agent such as Claude Code or Codex
+ * (goose D-0048). It describes the hub's JSON-RPC endpoint as a plain HTTP API called with curl,
+ * so no MCP registration is needed, and states the rules for the whole conversation so that
+ * follow-up requests also go to the editor.
+ */
+export function starterPrompt(token: string, apiUrl: string): string {
+  return `For this whole conversation you work on my Goose Playground: an editor open in my browser tab. You reach it only through the HTTP API below, called with curl from your terminal. No MCP setup is needed.
+
+Session token: ${token}
+
+## Rules for every request in this conversation
+- Every program I ask for goes into my editor with set_code, then check, then run. This applies to every follow-up request too, not only the first one.
+- Do not create source files in this folder or project, and do not paste the program into the chat. The only file you may write is the temporary JSON body for curl.
+- A playground program is one file (main.goose) with fn main(). There is no separate test runner: when I ask for tests, put them in the same program, e.g. test functions called from main that print "PASS <name>" or "FAIL <name>: <details>", and finish with a summary line.
+- Make one call at a time and wait for its result. Runs are limited per session, so change the code between runs.
+- If a call says the session token is not valid, stop and ask me for a new token.
+- After each run, tell me briefly what you did and the output.
+
+## How to call the API
+POST ${apiUrl} with header "Content-Type: application/json" and this body:
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"<tool>","arguments":{...}}}
+
+Build the body with a JSON library (Python json.dump or Node JSON.stringify) so the code is escaped correctly, write it to a temporary file, and send it:
+curl -s -X POST ${apiUrl} -H "Content-Type: application/json" --data @body.json
+
+The answer is JSON. The text you need is in result.content[0].text. If result.isError is true, that text explains the problem.
+
+## Tools
+- goose_docs {"topic": "..."}: topics playground, tutorial, reference, stdlib, cpp_rust, command_line, spec. A long topic returns its section list; call again with {"topic": "...", "section": "<number or title>"}.
+- get_sample {"name": "sieve"}: example programs; without a name, the list.
+- get_code {"sessionToken": "<token>"}: the code in my editor.
+- set_code {"sessionToken": "<token>", "code": "<whole program>"}: replace my editor content.
+- check {"sessionToken": "<token>"}: compile the editor content and return diagnostics.
+- run {"sessionToken": "<token>"}: run the editor content and return stdout, stderr and the exit code.
+
+Goose is not C, Rust or Go. Before writing code, read goose_docs "playground" and "tutorial", and look up details in "reference" and "stdlib" (dictionaries, vectors, sorting) when you need them. Do not guess syntax; fix every check error before running.
+
+## First step now
+Call goose_docs "playground" and get_code to confirm the connection. Then reply only "Connected" with the first line of my editor content, and wait for my request.`;
 }

@@ -36,7 +36,9 @@ stateDiagram-v2
 - `Playground` keeps the editor content in `codeRef` so `getCode` answers with the latest text without reconnecting. An AI `setCode` marks the editor edited, so a shared link loaded later does not overwrite it.
 - Connect is enabled by `agentAllowed(state, health)` (Normal and `agentAvailable`). Unmounting the page disconnects.
 - The output panel shows "AI · " before the status of AI results and a check result (`Check passed`, `Compile error`, limits) with diagnostics.
-- Setup help is a `details` element titled as step 1 with the MCP URL (`endpoints.mcp`), registration steps and the note that the prompt alone connects nothing. It is open while connected and no tool has been called, closed otherwise.
+- "How to use it" is a `details` element with the terminal agent steps, the note that chat apps and cloud sessions cannot send the requests, and the optional MCP URL. It is open while connected and no tool has been called, closed otherwise.
+- `starterPrompt(token, apiUrl)` returns the HTTP API prompt (D-0048): the JSON-RPC body for `tools/call`, the curl command with a JSON file built by a JSON library, the six tools and their arguments, rules for every request, and a first step that only confirms the connection. The hub's MCP endpoint accepts these plain POSTs because it runs stateless.
+- `time()` in `AiPanel.tsx` formats with the fixed locale `en-US`. `GoogleButton` passes `locale: "en"` and the Turnstile widget `language: "en"`. `LoginDialog` uses `noValidate` and its own "Enter your username and password." message.
 - Layout: the shell is a flex column, so the editor panes take the spare height and the AI panel keeps its own height. On narrow screens the toolbar shortcut hint is hidden but the panel's hints stay visible.
 - Scenario: The AI calls `run` → lock handshake → `runStarted` → the output panel says "AI is running the code…" → `runFinished` → "AI · Exited with code 0 · 140 ms · server".
 

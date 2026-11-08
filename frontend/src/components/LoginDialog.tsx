@@ -32,6 +32,11 @@ export default function LoginDialog({ client, onClose, onLoggedIn }: Props) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    // The form has noValidate: the browser's own required-field message would appear in the browser language.
+    if (!username.trim() || !password) {
+      setError("Enter your username and password.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -45,7 +50,7 @@ export default function LoginDialog({ client, onClose, onLoggedIn }: Props) {
 
   return (
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="login-title" onCancel={(e) => { e.preventDefault(); onClose(); }}>
-      <form className={styles.loginForm} onSubmit={submit}>
+      <form className={styles.loginForm} onSubmit={submit} noValidate>
         <h2 id="login-title" className={styles.dialogTitle}>Log in with your jace-s account</h2>
         <p className={styles.hint}>Logged in, an AI connection lasts up to 8 hours instead of 2.</p>
         <label className={styles.field}>

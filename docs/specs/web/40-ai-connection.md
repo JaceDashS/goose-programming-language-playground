@@ -15,17 +15,11 @@ The AI connection panel lets Claude, ChatGPT, Claude Code or Codex edit, check a
 - The AI can replace the editor content (shown at once), read it, and run or check it. AI results appear in the output panel marked "AI"; while the AI runs or checks, the panel says so. A failed AI run shows the hub's message.
 - The tab executes nothing it receives. Unknown or malformed messages are dropped.
 - When the session ends, the panel explains why (idle, maximum time, server full, per-network or per-account limit, browser check failed, server restart, connection lost) and offers Connect again.
-- Setup help is step 1: the MCP URL with a Copy button, how to add it in claude.ai, ChatGPT, Claude Code and Codex and turn it on in the chat, and that the prompt alone does not connect anything. It is open while the AI has not called a tool yet. The waiting status names step 2: paste the prompt into a chat where the server is on.
-- Starter prompt (goose D-0039, D-0046), six lines:
-
-```
-You are connected to my Goose Playground editor through the "goose-playground" MCP server (https://api.jace-s.com/goose/mcp).
-Session token: <TOKEN>
-Call goose_docs first (topic "playground", then "tutorial"). Write code with set_code, then use check and run.
-Edit the code in my editor; do not paste code into the chat.
-If the goose-playground tools are not available in this chat, stop and ask me to add or turn on the MCP server; do not try to reach the URL any other way.
-The token only works with these tools and ends when I close the playground tab.
-```
+- The starter prompt is meant for an AI agent that runs commands in the user's own terminal (Claude Code, Codex). It describes the hub endpoint as a plain HTTP API called with curl, so no MCP registration is needed (D-0048). Chat apps and cloud sessions cannot send the requests, because their sandboxes block outside connections; the panel says so.
+- The prompt states rules for the whole conversation: every request, including follow-ups, goes into the editor with set_code, check and run; no source files in the agent's folder and no code in the chat; tests live inside the one program and print PASS or FAIL; one call at a time; ask for a new token when it is invalid. Its first step only confirms the connection ("Connected" and the first editor line) and waits.
+- "How to use it" (open until the AI first calls a tool) lists the three steps: new terminal agent session, paste and wait for "Connected", ask for a program and allow curl. Registering the MCP server stays optional.
+- Everything on the page is English whatever the browser language is: times use an English format (05:51 AM), Google's button and the Turnstile widget are set to English, and the login form shows its own message for empty fields instead of the browser's validation text.
+- The full prompt text is `starterPrompt()` in `frontend/src/lib/agentSession.ts`; the API address comes from `endpoints.mcp`.
 
 ## Example
 

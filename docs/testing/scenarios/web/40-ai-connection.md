@@ -61,3 +61,14 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Steps: The AI has no goose-playground tools. With the earlier prompt it tried to reach the MCP URL from its code sandbox, which failed on DNS; the gateway log showed no request from OpenAI to `/goose/mcp` (2026-11-09).
 - Expected result: The prompt tells the AI to stop and ask the user to add or turn on the server. The panel shows step 1 open until the first tool call, with the note that pasting only the prompt is not enough.
 - Test: `agentSession.test.ts` → "starter prompt names the server, the token and the workflow".
+
+### Terminal Agent Without MCP Registration
+- Input: A new Claude Code session on the user's PC with no MCP server registered; the starter prompt pasted, then "implement Dijkstra with test code".
+- Steps: The agent confirms the connection with goose_docs and get_code, then for each request posts set_code, check and run to the hub endpoint with curl.
+- Expected result: "Connected" first; the Dijkstra program with in-program tests appears in the editor and its PASS lines in the output panel. Checked by the user on 2026-11-09 (an earlier prompt without conversation-wide rules let the second request bypass the editor: no call reached the hub).
+- Test: `agentSession.test.ts` → "starter prompt gives the token, the curl API and rules that hold for follow-up requests"; `AiPanel.test.tsx` → "explains the terminal agent workflow and keeps MCP optional".
+
+### English Page In A Korean Browser
+- Input: A browser with Korean as its language, an AI action at 05:51 local time, a login attempt with empty fields.
+- Expected result: "AI connected: ran the code at 05:51 AM." with no Korean text anywhere on the page; Google's button and the browser check in English; "Enter your username and password." instead of the browser's message. Checked in Edge with locale ko-KR on 2026-11-09 against a local hub.
+- Test: `AiPanel.test.tsx` → "formats times in English whatever the browser language is", "asks for both login fields in English instead of the browser's validation message".
