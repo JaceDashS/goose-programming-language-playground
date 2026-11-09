@@ -220,7 +220,8 @@ export function connectAgent(url: string, handlers: AgentHandlers, options: Agen
  * The starter prompt the user pastes into a terminal AI agent such as Claude Code or Codex
  * (goose D-0048). It describes the hub's JSON-RPC endpoint as a plain HTTP API called with curl,
  * so no MCP registration is needed, and states the rules for the whole conversation so that
- * follow-up requests also go to the editor.
+ * follow-up requests also go to the editor. When the API cannot be used it says why and gives the
+ * program as a code block to copy (goose D-0049).
  */
 export function starterPrompt(token: string, apiUrl: string): string {
   return `For this whole conversation you work on my Goose Playground: an editor open in my browser tab. You reach it only through the HTTP API below, called with curl from your terminal. No MCP setup is needed.
@@ -229,7 +230,7 @@ Session token: ${token}
 
 ## Rules for every request in this conversation
 - Every program I ask for goes into my editor with set_code, then check, then run. This applies to every follow-up request too, not only the first one.
-- Do not create source files in this folder or project, and do not paste the program into the chat. The only file you may write is the temporary JSON body for curl.
+- Do not create source files in this folder or project, and do not paste the program into the chat while the API works. The only file you may write is the temporary JSON body for curl.
 - A playground program is one file (main.goose) with fn main(). There is no separate test runner: when I ask for tests, put them in the same program, e.g. test functions called from main that print "PASS <name>" or "FAIL <name>: <details>", and finish with a summary line.
 - Make one call at a time and wait for its result. Runs are limited per session, so change the code between runs.
 - If a call says the session token is not valid, stop and ask me for a new token.
@@ -252,8 +253,14 @@ The answer is JSON. The text you need is in result.content[0].text. If result.is
 - check {"sessionToken": "<token>"}: compile the editor content and return diagnostics.
 - run {"sessionToken": "<token>"}: run the editor content and return stdout, stderr and the exit code.
 
+## When the API cannot be used
+If you cannot send these requests (for example in a chat app such as ChatGPT or claude.ai, or without a terminal or network access), or a call fails so the program cannot reach my editor:
+1. Tell me briefly why, quoting the error if there is one.
+2. If you cannot run curl at all, tell me that this prompt needs an agent mode with a terminal, such as Claude Code or Codex; chat mode cannot send these requests.
+3. Write the whole requested program in one code block so I can copy it into the editor, and say that it was not checked or run.
+
 Goose is not C, Rust or Go. Before writing code, read goose_docs "playground" and "tutorial", and look up details in "reference" and "stdlib" (dictionaries, vectors, sorting) when you need them. Do not guess syntax; fix every check error before running.
 
 ## First step now
-Call goose_docs "playground" and get_code to confirm the connection. Then reply only "Connected" with the first line of my editor content, and wait for my request.`;
+Call goose_docs "playground" and get_code to confirm the connection. Then reply only "Connected" with the first line of my editor content, and wait for my request. If you cannot make these calls, follow "When the API cannot be used" instead.`;
 }

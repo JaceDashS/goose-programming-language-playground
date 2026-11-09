@@ -194,6 +194,11 @@ it("starter prompt gives the token, the curl API and rules that hold for follow-
   expect(p).toContain("POST https://api.jace-s.com/goose/mcp");
   expect(p).toContain("curl -s -X POST https://api.jace-s.com/goose/mcp");
   expect(p).toContain("No MCP setup is needed");
+  expect(p).toContain("do not paste the program into the chat while the API works");
+  expect(p).toContain("## When the API cannot be used");
+  expect(p).toContain("this prompt needs an agent mode with a terminal, such as Claude Code or Codex");
+  expect(p).toContain("Write the whole requested program in one code block");
+  expect(p).toContain('follow "When the API cannot be used" instead');
   expect(p).toContain("This applies to every follow-up request too");
   expect(p).toContain("There is no separate test runner");
   for (const tool of ["goose_docs", "get_sample", "get_code", "set_code", "check", "run"]) expect(p).toContain(`- ${tool} {`);

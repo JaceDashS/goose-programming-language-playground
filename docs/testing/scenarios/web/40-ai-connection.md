@@ -56,11 +56,11 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 - Expected result: No AI edit; browser output is preserved and has no AI label.
 - Test: `AiPanel.test.tsx` → "refuses AI edits during a browser run without replacing that run's output".
 
-### Prompt Without The MCP Server
-- Input: The user pastes the starter prompt into a ChatGPT chat where the goose-playground server was never added or turned on.
-- Steps: The AI has no goose-playground tools. With the earlier prompt it tried to reach the MCP URL from its code sandbox, which failed on DNS; the gateway log showed no request from OpenAI to `/goose/mcp` (2026-11-09).
-- Expected result: The prompt tells the AI to stop and ask the user to add or turn on the server. The panel shows step 1 open until the first tool call, with the note that pasting only the prompt is not enough.
-- Test: `agentSession.test.ts` → "starter prompt names the server, the token and the workflow".
+### Prompt In A Chat App
+- Input: The user pastes the starter prompt into a chat app (ChatGPT, claude.ai) that has no terminal, then asks for a program.
+- Steps: The chat cannot POST to the hub: earlier prompts led ChatGPT's code sandbox to a DNS failure with no request at the gateway, and claude.ai answered that it has no terminal or HTTP POST (2026-11-09). A GET bridge test also failed, because chat fetch refuses URLs the AI builds itself (platform D-0254).
+- Expected result: The AI says why it could not reach the editor, tells the user that the prompt needs an agent mode with a terminal such as Claude Code or Codex, and gives the whole program in one code block to copy into the editor, marked as not checked or run. The same explanation and code block follow when a call fails later (invalid token, busy, no answer); an invalid token also asks for a new one.
+- Test: `agentSession.test.ts` → "starter prompt gives the token, the curl API and rules that hold for follow-up requests".
 
 ### Terminal Agent Without MCP Registration
 - Input: A new Claude Code session on the user's PC with no MCP server registered; the starter prompt pasted, then "implement Dijkstra with test code".
