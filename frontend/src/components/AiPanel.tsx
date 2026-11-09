@@ -51,7 +51,7 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
       <summary>How to use it</summary>
       <ol>
         <li>Open a new session of an AI agent that runs commands in your own terminal, such as Claude Code or Codex.</li>
-        <li>Paste the starter prompt and wait until the agent replies &quot;Connected&quot;.</li>
+        <li>Paste the starter prompt and wait until the agent replies &quot;Connected to your Goose Playground&quot;.</li>
         <li>
           Ask for a program. The agent asks to run curl or a short script; allow it. Codex runs commands in a sandbox
           without internet access, so approve running the request outside the sandbox when it asks.

@@ -202,7 +202,8 @@ it("starter prompt gives the token, the curl API and rules that hold for follow-
   expect(p).toContain("This applies to every follow-up request too");
   expect(p).toContain("There is no separate test runner");
   for (const tool of ["goose_docs", "get_sample", "get_code", "set_code", "check", "run"]) expect(p).toContain(`- ${tool} {`);
-  expect(p).toContain('reply only "Connected"');
+  expect(p).toContain("Connected to your Goose Playground.\nYour editor has <number of lines> lines and starts with `<first line>`.");
+  expect(p).toContain("Tell me what to build.");
   // The page is English: the prompt must not carry text from the browser's language.
   expect(p).toMatch(/^[\x20-\x7e\n]*$/);
 });

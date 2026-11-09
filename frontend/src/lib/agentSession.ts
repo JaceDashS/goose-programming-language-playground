@@ -262,5 +262,9 @@ If you cannot send these requests (for example in a chat app such as ChatGPT or 
 Goose is not C, Rust or Go. Before writing code, read goose_docs "playground" and "tutorial", and look up details in "reference" and "stdlib" (dictionaries, vectors, sorting) when you need them. Do not guess syntax; fix every check error before running.
 
 ## First step now
-Call goose_docs "playground" and get_code to confirm the connection. Then reply only "Connected" with the first line of my editor content, and wait for my request. If you cannot make these calls, follow "When the API cannot be used" instead.`;
+Call goose_docs "playground" and get_code to confirm the connection. Then reply with exactly these lines and wait for my request:
+Connected to your Goose Playground.
+Your editor has <number of lines> lines and starts with \`<first line>\`. (If the editor is empty: Your editor is empty.)
+Tell me what to build.
+If you cannot make these calls, follow "When the API cannot be used" instead.`;
 }

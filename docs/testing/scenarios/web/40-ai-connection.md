@@ -65,7 +65,7 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 ### Terminal Agent Without MCP Registration
 - Input: A new Claude Code session on the user's PC with no MCP server registered; the starter prompt pasted, then "implement Dijkstra with test code".
 - Steps: The agent confirms the connection with goose_docs and get_code, then for each request posts set_code, check and run to the hub endpoint with curl.
-- Expected result: "Connected" first; the Dijkstra program with in-program tests appears in the editor and its PASS lines in the output panel. Checked by the user on 2026-11-09 (an earlier prompt without conversation-wide rules let the second request bypass the editor: no call reached the hub).
+- Expected result: "Connected to your Goose Playground." with the editor summary first; the Dijkstra program with in-program tests appears in the editor and its PASS lines in the output panel. Checked by the user on 2026-11-09 (an earlier prompt without conversation-wide rules let the second request bypass the editor: no call reached the hub).
 - Test: `agentSession.test.ts` → "starter prompt gives the token, the curl API and rules that hold for follow-up requests"; `AiPanel.test.tsx` → "explains the terminal agent workflow and keeps MCP optional".
 
 ### English Page In A Korean Browser
@@ -76,5 +76,5 @@ Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s p
 ### Real Terminal Agents
 - Input: The panel's starter prompt from a connected local tab (local hub, runner and run image) plus "implement a function that returns the first n square numbers, with tests in the program", given to Claude Code (`claude -p`, empty folder) and to Codex 0.167 (`codex exec`) on Windows.
 - Steps: Each agent confirms the connection, reads the docs, posts set_code, check and run with curl.
-- Expected result: Both reply "Connected" with the first editor line, put the program in the editor and report five PASS lines and "5/5 tests passed"; Claude Code leaves no files in its folder. Codex chose PowerShell with curl.exe on its own. Observed on 2026-11-09.
+- Expected result: Both reply "Connected" with the first editor line (the first step before D-0052), put the program in the editor and report five PASS lines and "5/5 tests passed"; Claude Code leaves no files in its folder. Codex chose PowerShell with curl.exe on its own. Observed on 2026-11-09.
 - Codex limit: its Windows sandbox blocks outside addresses (`curl https://api.jace-s.com/...` exits at once; `sandbox_workspace_write.network_access=true` did not change it), while local addresses work. Outside the sandbox the same command returns the health JSON. The panel therefore tells Codex users to approve running the request outside the sandbox.
