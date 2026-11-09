@@ -13,12 +13,19 @@
 
 ## Publish
 
+The Vercel project is connected to the Goose Playground GitHub repository with production branch main (D-0051). A push to main builds and deploys production; other branches do not deploy, because `frontend/vercel.json` sets `git.deploymentEnabled` to main only.
+
 1. Run the server and frontend checks documented in [Testing Strategy](../testing/10-strategy.md).
-2. Merge the reviewed product dev branch into product main and push the product branches first.
+2. Merge the reviewed product dev branch into product main and push it. Vercel starts the production build.
 3. Commit the product revision in the platform and merge platform dev into main before pushing it.
-4. Link the local Goose repository with vercel link, selecting goose-playground and the existing account.
-5. Run vercel deploy --prod from the Goose repository. The project root setting selects frontend.
-6. Verify the public page and run a hello program through /api/run. Inspect logs if the fallback reports unavailable.
+4. Verify the public page and run a hello program through /api/run. Inspect logs if the fallback reports unavailable.
+
+A manual `vercel deploy --prod` from a linked clone still works for a redeploy without a commit.
+
+Example:
+- Input: A commit on dev that changes the starter prompt.
+- Steps: Fast-forward main to dev and push → Vercel builds main from the frontend root directory → the production alias moves to the new deployment.
+- Expected result: The public page serves the new prompt; pushing dev alone creates no deployment.
 
 ## Domain
 
