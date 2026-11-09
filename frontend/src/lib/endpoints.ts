@@ -8,7 +8,7 @@ export const endpoints = {
   fallback: "/api/run",
   /** Agent session socket (wss://api.jace-s.com/goose/session). */
   session: `${hub.replace(/^http/, "ws")}/goose/session`,
-  /** MCP endpoint the user registers in the AI. */
+  /** Hub MCP endpoint: the starter prompt calls it with curl; AI apps with MCP support may also register it. */
   mcp: `${hub}/goose/mcp`,
   /** jace-s account API (login, Google sign-in). The hub shares this host, so the login cookie reaches it. */
   account: hub,
