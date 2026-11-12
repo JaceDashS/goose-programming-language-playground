@@ -250,7 +250,7 @@ export default function Playground() {
           {running ? "Running…" : "Run"}
         </button>
         <label className={styles.samplePicker}>
-          <span>Sample</span>
+          <span className={styles.sampleLabel}>Sample</span>
           <span className={styles.selectWrap}>
             <select className={styles.sampleSelect} aria-label="Sample" value="" disabled={aiLock !== null} onChange={(e) => {
               if (aiLockRef.current) return;

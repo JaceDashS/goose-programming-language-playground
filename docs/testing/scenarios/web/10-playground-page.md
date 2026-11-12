@@ -71,6 +71,13 @@
 - Expected result: Both controls match the toolbar theme, dropdown text and chevron stay readable, keyboard focus is visible, the mobile toolbar stays on one horizontally scrollable row, sample selection and sharing keep working.
 - Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
 
+## Narrow Sample Picker Keeps Its Width
+- Input: A 320 px or 375 px viewport after Share shows "Link copied", or while the Cloudflare check is visible in the toolbar.
+- Steps: Look at the Sample field, open it and choose a sample.
+- Expected result: The select stays at least 160 px wide with readable text, the toolbar scrolls horizontally if the row is too long, and the chosen sample replaces the editor content.
+- Previous behavior: The select was the only shrinkable toolbar item, so it collapsed to about 50 px (or to nothing with the check visible) and could not be used.
+- Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
+
 ## Turnstile Tokens
 
 - Input: Site key built in; the hub answers 503 `busy`, then the fallback answers 200.

@@ -112,7 +112,8 @@
 @media (max-width: 760px) {
   .toolbar { gap: 8px; }
   .samplePicker { flex: 1 1 200px; }
-  .selectWrap { flex: 1; width: auto; }
+  .sampleLabel { display: none; }
+  .selectWrap { flex: 1; width: auto; min-width: 160px; }
   .shareMessage { max-width: 240px; }
   .panes { grid-template-columns: 1fr; }
   .editor { min-height: 280px; }

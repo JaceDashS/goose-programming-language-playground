@@ -57,7 +57,7 @@
 - Input: Existing theme variables, viewport width, keyboard focus and pointer interaction.
 - Output: Run, Sample and Share have a shared 40 px minimum height and matching rounded controls. Sample retains a native select with a decorative CSS chevron; Share uses a secondary outlined button. Both use the existing panel, text, border and accent variables in light and dark themes.
 - Code: frontend/src/components/Playground.tsx and frontend/src/components/Playground.module.css.
-- The toolbar stays on one horizontally scrollable row on small screens; the sample field can shrink and share feedback stays inline. Empty feedback is hidden. Keyboard focus is outlined, and hover and pressed states use theme colors.
+- The toolbar stays on one horizontally scrollable row on small screens; the sample field grows to fill the row but keeps a 160 px minimum width, so share feedback or the Cloudflare check scrolls the row instead of collapsing the field. Under 760 px the visible "Sample" word is hidden; the select keeps its `aria-label` and its "Choose a sample" placeholder. Empty feedback is hidden. Keyboard focus is outlined, and hover and pressed states use theme colors.
 - Example input: A 375 px viewport with focus on Sample.
 - Example steps: Tab to Sample, choose a sample, then focus and activate Share.
 - Expected result: Visible focus, readable themed controls, no horizontal overflow and an unchanged share workflow.
