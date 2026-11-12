@@ -200,7 +200,18 @@ export default function Playground() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Goose Playground</h1>
+        <div className={styles.brand}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon-192.png"
+            alt=""
+            aria-hidden="true"
+            width={32}
+            height={32}
+            className={styles.brandIcon}
+          />
+          <h1 className={styles.title}>Goose Playground</h1>
+        </div>
         <nav className={styles.headerLinks}>
           <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
             About Goose

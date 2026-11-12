@@ -7,7 +7,9 @@
   padding: 0 16px 16px;
   gap: 12px;
 }
-.header { display: flex; align-items: baseline; justify-content: space-between; padding-top: 16px; }
+.header { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brandIcon { border-radius: 7px; display: block; flex-shrink: 0; }
 .title { font-size: 1.25rem; font-weight: 650; margin: 0; }
 .link { color: var(--accent); font-size: 0.9rem; }
 .bannerDegraded, .bannerOutage { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; }
