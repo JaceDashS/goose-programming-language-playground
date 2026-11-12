@@ -78,6 +78,12 @@
 - Previous behavior: The select was the only shrinkable toolbar item, so it collapsed to about 50 px (or to nothing with the check visible) and could not be used.
 - Design: [Toolbar Controls](../../../design/web/10-playground-page.md#toolbar-controls).
 
+## Themed Scrollbars
+- Input: The page in light and in dark color scheme, with a long sample in the editor and a narrow toolbar.
+- Steps: Load a long sample, then scroll the page, the editor and the toolbar.
+- Expected result: Every scrollbar is thin with a `--scrollbar` thumb (#c2c2ba light, #474a42 dark) on a transparent track; no bright default scrollbar appears in dark mode.
+- Design: [Page](../../../design/web/10-playground-page.md#page).
+
 ## Turnstile Tokens
 
 - Input: Site key built in; the hub answers 503 `busy`, then the fallback answers 200.

@@ -39,7 +39,7 @@
 - Code: `frontend/src/components/Playground.tsx`, `frontend/src/components/OutputPanel.tsx`, `frontend/src/components/Playground.module.css`, `frontend/src/app/globals.css`, `frontend/src/app/layout.tsx`.
 - Icons: `frontend/src/app/favicon.ico` (16–64 px), `frontend/src/app/icon.png` (512 px), `frontend/src/app/apple-icon.png` (180 px), `frontend/public/icon-192.png`, `frontend/public/icon-512.png`, `frontend/public/Goose-Playground.png` (384 px app list icon) and `frontend/public/Goose-Playground-original.png` (1024 px master).
 - Endpoints: `frontend/src/lib/endpoints.ts`. `NEXT_PUBLIC_HUB_URL` overrides the hub origin for local development.
-- Layout: a flex column of header (brand icon and title, About Goose, Log in or the account), banner, toolbar, two panes (one column under 760 px) that take the spare height, and the AI panel ([AI Connection Design](40-ai-connection.md)). Colors are CSS variables with a dark scheme.
+- Layout: a flex column of header (brand icon and title, About Goose, Log in or the account), banner, toolbar, two panes (one column under 760 px) that take the spare height, and the AI panel ([AI Connection Design](40-ai-connection.md)). Colors are CSS variables with a dark scheme. `globals.css` sets `color-scheme` per theme and gives every scroller (page, editor, output, toolbar) a thin scrollbar with the `--scrollbar` thumb on a transparent track.
 - Endpoints also include the session socket, the MCP URL, the account API origin (the hub origin) and the main site (`NEXT_PUBLIC_SITE_URL`).
 - The editor is a plain `textarea` until the editor component is chosen.
 - Contract types: `frontend/src/lib/contract.ts` re-exports generated schema types. See [Contract Types](15-contract-types.md).
