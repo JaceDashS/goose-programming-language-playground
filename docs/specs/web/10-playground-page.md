@@ -37,3 +37,7 @@
 - Input: Run is pressed and Cloudflare needs interaction.
 - Steps: Show the check at the right of the existing controls.
 - Expected result: The check stays in the Run row.
+
+## Project Link
+- The header identifies the upstream language link as Goose project rather than About. It keeps the existing destination and opens separately.
+- Input: Playground header. Steps: Follow Goose project. Expected result: The upstream language repository opens without adding a creator About page.

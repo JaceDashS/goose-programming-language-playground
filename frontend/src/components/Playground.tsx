@@ -214,7 +214,7 @@ export default function Playground() {
         </div>
         <nav className={styles.headerLinks}>
           <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
-            About Goose
+            Goose project
           </a>
           {user ? (
             <span className={styles.account}>

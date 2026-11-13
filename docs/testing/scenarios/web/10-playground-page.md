@@ -118,3 +118,10 @@
 - Steps: Press Run and show the check.
 - Expected result: The check is right aligned in the Run toolbar without a separate page row; narrow toolbars scroll horizontally.
 - Design: [Turnstile Widget](../../../design/web/10-playground-page.md#turnstile-widget).
+
+## Upstream Project Link
+- Input: Playground header.
+- Steps: Read the navigation and follow Goose project.
+- Expected result: No About entry is shown; the existing upstream repository URL remains https://github.com/aardappel/goose.
+- Design: [Page Layout](../../../design/web/10-playground-page.md).
+- Verification 2026-11-13: TypeScript check and the existing 11 Playground account and AI panel tests passed. Source inspection confirmed the external destination is unchanged.
