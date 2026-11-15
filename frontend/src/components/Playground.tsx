@@ -213,6 +213,12 @@ export default function Playground() {
           <h1 className={styles.title}>Goose Playground</h1>
         </div>
         <nav className={styles.headerLinks}>
+          <a className={styles.link} href={`${endpoints.site}/apps`}>
+            Main page
+          </a>
+          <a className={styles.link} href={`${endpoints.site}/feedback/11`} target="_blank" rel="noreferrer">
+            Feedback
+          </a>
           <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
             Goose project
           </a>
