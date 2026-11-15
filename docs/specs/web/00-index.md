@@ -6,3 +6,5 @@
 - [URL Sharing](30-url-sharing.md) — Share code through a compressed URL hash
 - [AI Connection](40-ai-connection.md) — Connect AI, starter prompt, AI edits and runs, ended sessions
 - [Account Login](50-account-login.md) — jace-s login for longer AI connections
+
+- [Feedback Dialogs](60-feedback-dialogs.md) — In app feedback writing and motion preferences

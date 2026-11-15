@@ -10,3 +10,5 @@
 - [AI Connection Scenarios](40-ai-connection.md) — Connect, AI edits and runs, dropped messages, disconnect and ended sessions
 
 - [Account Login Scenarios](50-account-login.md) — Password and Google login, errors and the logged-in lifetime
+
+- [Feedback Dialogs](60-feedback-dialogs.md) — In app feedback writing and motion preferences

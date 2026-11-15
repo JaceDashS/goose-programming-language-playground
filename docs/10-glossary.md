@@ -71,3 +71,7 @@
 - Code: `toolStarted`, `toolReady`, `toolFinished` in the session socket contract.
 - Related: [Session Socket](api/20-socket.md).
 - Example: An AI run locks the editor until its matching completion; a parallel refused call does not unlock it.
+
+## Feedback Composer
+
+An in app writing dialog that posts a public comment with the canonical product identity. Opening it keeps the current app screen in place.

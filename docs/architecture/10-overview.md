@@ -142,3 +142,7 @@ As of 2026-11-08.
 7. Operations: gVisor install procedure, monitoring and alerts, Goose version update procedure.
 8. UI: layout, banners, AI connection panel, sample list, mobile support.
 9. Confirm the tentative defaults: run limits, concurrency 2, warm pool 2, Goose v2026.4, CLI-only samples, URL sharing, the time box for the browser syntax-check spike, and the GitHub account.
+
+## Feedback Composer
+
+The app opens feedback locally and retains the existing comments API and authentication boundary. See [Feedback Dialog Design](../design/web/60-feedback-dialogs.md) for the UI and transport paths.

@@ -20,6 +20,8 @@ export interface AccountClient {
   session(): Promise<AccountUser | null>;
   login(username: string, password: string, remember: boolean): Promise<AccountUser>;
   logout(): Promise<void>;
+  /** Posts a public Goose Playground comment using the current session or guest password. */
+  submitFeedback(content: string, password?: string): Promise<{ id: number }>;
   googleConfig(): Promise<{ enabled: boolean; clientId: string | null }>;
   googleChallenge(): Promise<string>;
   googleLogin(credential: string, remember: boolean): Promise<AccountUser>;
@@ -81,6 +83,10 @@ export function createAccountClient(base: string, f: typeof fetch = (...a) => fe
     async logout() {
       await request("/auth/logout", {});
       csrf = "";
+    },
+    submitFeedback(content, password) {
+      if (!content.trim()) return Promise.reject(new Error("Feedback is required"));
+      return request("/comments", { content: content.trim(), sourceAppId: 11, ...(password ? { userPassword: password } : {}) });
     },
     googleConfig: () => request("/auth/google/config"),
     async googleChallenge() {

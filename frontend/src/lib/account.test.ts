@@ -38,3 +38,20 @@ it("treats a network failure as its own error", async () => {
   const client = createAccountClient("https://api.jace-s.com", (async () => { throw new TypeError("x"); }) as unknown as typeof fetch);
   expect(loginMessage(await client.session().catch((e) => e))).toBe("The login server could not be reached.");
 });
+
+it("posts guest and member feedback with canonical app 11 and the existing CSRF session", async () => {
+  const { f, calls } = api([
+    [201, { id: 1 }], [200, { user: { id: "u1", username: "jace" }, csrfToken: "c1" }], [201, { id: 2 }], [429, { error: "RATE_LIMITED" }],
+  ]);
+  const client = createAccountClient("https://api.jace-s.com", f);
+  await expect(client.submitFeedback(" ", "p")).rejects.toThrow("Feedback is required");
+  expect(await client.submitFeedback(" guest ", "p")).toEqual({ id: 1 });
+  expect(JSON.parse(String(calls[0].init.body))).toEqual({ content: "guest", sourceAppId: 11, userPassword: "p" });
+  await client.login("jace", "password", true);
+  expect(await client.submitFeedback("member")).toEqual({ id: 2 });
+  expect(calls[2].url).toBe("https://api.jace-s.com/comments");
+  expect(calls[2].init.credentials).toBe("include");
+  expect((calls[2].init.headers as Record<string, string>)["x-csrf-token"]).toBe("c1");
+  expect(JSON.parse(String(calls[2].init.body))).toEqual({ content: "member", sourceAppId: 11 });
+  await expect(client.submitFeedback("retry")).rejects.toMatchObject({ status: 429 });
+});

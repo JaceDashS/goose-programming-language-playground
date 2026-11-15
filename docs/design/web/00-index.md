@@ -10,3 +10,5 @@
 - [AI Connection Design](40-ai-connection.md) — Session client, allow-list parsing, AI panel and output
 
 - [Account Login Design](50-account-login.md) — Account client, login dialog and Google sign-in
+
+- [Feedback Dialogs](60-feedback-dialogs.md) — In app feedback writing and motion preferences

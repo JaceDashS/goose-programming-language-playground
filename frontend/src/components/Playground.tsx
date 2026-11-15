@@ -12,6 +12,7 @@ import { samples } from "@/samples";
 import { createTurnstileWidget, loadTurnstile, turnstileSiteKey, type TurnstileWidget } from "@/lib/turnstile";
 import OutputPanel, { type PanelOutcome } from "./OutputPanel";
 import AiPanel from "./AiPanel";
+import FeedbackDialog from "./FeedbackDialog";
 import LoginDialog from "./LoginDialog";
 import styles from "./Playground.module.css";
 
@@ -23,6 +24,7 @@ const HELLO = `fn main() {
 const account = createAccountClient(endpoints.account);
 
 export default function Playground() {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [code, setCode] = useState(HELLO);
   const [running, setRunning] = useState(false);
   const [outcome, setOutcome] = useState<PanelOutcome | null>(null);
@@ -199,6 +201,7 @@ export default function Playground() {
 
   return (
     <div className={styles.shell}>
+      {feedbackOpen && <FeedbackDialog client={account} user={user} onClose={() => setFeedbackOpen(false)} onLogin={() => setLoginOpen(true)} />}
       <header className={styles.header}>
         <div className={styles.brand}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -216,9 +219,7 @@ export default function Playground() {
           <a className={styles.link} href={`${endpoints.site}/about`} target="_blank" rel="noopener noreferrer">
             About Developer
           </a>
-          <a className={styles.link} href={`${endpoints.site}/feedback/11`} target="_blank" rel="noreferrer">
-            Feedback
-          </a>
+          <button type="button" className={styles.linkButton} onClick={() => setFeedbackOpen(true)}>Feedback</button>
           <a className={styles.link} href="https://github.com/aardappel/goose" target="_blank" rel="noreferrer">
             Goose project
           </a>

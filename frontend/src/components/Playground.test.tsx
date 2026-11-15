@@ -86,3 +86,31 @@ it("keeps hello and explains an invalid shared link", async () => {
   expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toContain("Hello, Goose!");
   window.history.replaceState(null, "", "/");
 });
+it("opens feedback inside the app, retains a rate limited draft and retries successfully", async () => {
+  const { waitFor, within } = await import("@testing-library/react");
+  let attempts = 0;
+  const fetchMock = vi.fn(async (url: string) => {
+    if (String(url).endsWith("/auth/session")) return Response.json({ user: null });
+    if (String(url).endsWith("/comments")) {
+      attempts++;
+      return attempts === 1 ? Response.json({ error: "RATE_LIMITED" }, { status: 429 }) : Response.json({ id: 42 }, { status: 201 });
+    }
+    return Response.json({ runner: "up", freeRunSlots: 1, agentAvailable: true });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<Playground />);
+  fireEvent.click(screen.getByRole("button", { name: "Feedback" }));
+  const dialog = screen.getByRole("dialog", { name: "Feedback" });
+  const form = within(dialog);
+  fireEvent.change(form.getByLabelText("Your feedback"), { target: { value: "a retained draft" } });
+  fireEvent.change(form.getByLabelText("Password for editing or deleting"), { target: { value: "guest-password" } });
+  fireEvent.submit(form.getByRole("button", { name: "Send feedback" }).closest("form")!);
+  await waitFor(() => expect(form.getByRole("alert").textContent).toContain("Too many attempts"));
+  expect((form.getByLabelText("Your feedback") as HTMLTextAreaElement).value).toBe("a retained draft");
+  fireEvent.submit(form.getByRole("button", { name: "Send feedback" }).closest("form")!);
+  await waitFor(() => expect(form.getByRole("status").textContent).toContain("Thank you"));
+  expect(attempts).toBe(2);
+  fireEvent.click(form.getByRole("button", { name: "Close" }));
+  expect(screen.queryByRole("dialog", { name: "Feedback" })).toBeNull();
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toContain("Hello, Goose!");
+});
