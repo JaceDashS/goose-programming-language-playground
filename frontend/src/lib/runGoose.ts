@@ -17,6 +17,8 @@ export interface RunOptions {
   fetch?: typeof fetch;
   /** Abort the primary request after this long and treat it as unreachable. */
   primaryTimeoutMs?: number;
+  /** Skip the primary attempt and go straight to the fallback when the primary was recently down. */
+  preferFallback?: boolean;
 }
 
 /** What the UI gets back: a result, or an error to show. `state` is the service state this attempt observed. */
@@ -83,10 +85,12 @@ export async function runGoose(code: string, endpoints: RunEndpoints, opts: RunO
   const f = opts.fetch ?? fetch;
   const timeout = opts.primaryTimeoutMs ?? DEFAULT_PRIMARY_TIMEOUT_MS;
 
-  const first = await send(endpoints.primary, code, opts, f, timeout);
-  if (first.ok) return { kind: "result", result: first.result, state: "normal" };
-  if (!FALL_BACK_ON.has(first.code)) {
-    return { kind: "error", code: first.code, message: first.message, state: "normal" };
+  if (!opts.preferFallback) {
+    const first = await send(endpoints.primary, code, opts, f, timeout);
+    if (first.ok) return { kind: "result", result: first.result, state: "normal" };
+    if (!FALL_BACK_ON.has(first.code)) {
+      return { kind: "error", code: first.code, message: first.message, state: "normal" };
+    }
   }
 
   const second = await send(endpoints.fallback, code, opts, f, undefined);

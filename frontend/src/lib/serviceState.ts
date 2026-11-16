@@ -1,4 +1,4 @@
-// Service state shown to the user (Normal, Degraded, Outage) and the health recheck schedule.
+// Service state shown to the user (Normal, Degraded, Outage).
 import type { Health, ServiceState } from "./contract";
 
 /**
@@ -15,12 +15,6 @@ export function stateFromHealth(health: Health | null, fallbackDown: boolean): S
 /** Whether the AI connection panel may offer a connection. */
 export function agentAllowed(state: ServiceState, health: Health | null): boolean {
   return state === "normal" && !!health?.agentAvailable;
-}
-
-/** Recheck delay: 5 s while normal; while not normal 5, 10, 20, 40, then every 60 s. */
-export function recheckDelayMs(state: ServiceState, failures: number): number {
-  if (state === "normal") return 5_000;
-  return Math.min(60_000, 5_000 * 2 ** Math.max(0, failures));
 }
 
 export const BANNER: Record<ServiceState, string | null> = {

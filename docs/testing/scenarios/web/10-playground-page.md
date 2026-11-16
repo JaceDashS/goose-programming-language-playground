@@ -27,7 +27,7 @@
 
 ## Outage
 - Input: the hub is unreachable and the fallback answers 503 `unavailable`.
-- Result: "Temporary service outage.", state outage, Run disabled.
+- Result: "Temporary service outage.", state outage, Run remains enabled for retry.
 - Test: "reports an outage when both are unavailable".
 
 ## Health Drives The Banner
@@ -35,10 +35,10 @@
 - Result: degraded (outage if the last fallback failed). Only `runner: "up"` with a free slot is normal.
 - Test: "is normal only with the runner up and a free slot".
 
-## Health Recheck Backoff
-- Input: the state stays degraded.
-- Result: rechecks after 5, 10, 20, 40, then every 60 s; every 5 s while normal.
-- Test: "backs off while not normal".
+## On-Demand Health And Fallback Routing
+- Input: initial health check fails, then Run fails on fallback (outage), then fallback recovers.
+- Result: Run skips primary after initial health failure, stays enabled during outage, and recovers on retry.
+- Test: "routes straight to fallback after an initial health failure and keeps Run enabled during outage", "checks health on demand when Connect AI is clicked and allows retrying after recovery".
 
 ## Local End To End
 - Input: runner and hub binaries on local Docker, hub `ALLOWED_ORIGINS=http://localhost:3000`.

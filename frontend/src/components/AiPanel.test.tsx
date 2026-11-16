@@ -48,6 +48,7 @@ async function connect() {
   const button = await screen.findByRole("button", { name: "Connect AI" });
   await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(button);
+  await waitFor(() => expect(FakeSocket.last).not.toBeNull());
   const ws = FakeSocket.last!;
   expect(ws.url).toBe("wss://api.jace-s.com/goose/session");
   ws.readyState = 1;
@@ -218,4 +219,27 @@ it("asks for both login fields in English instead of the browser's validation me
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Log in" }));
   expect(await screen.findByText("Enter your username and password.")).toBeTruthy();
   expect(f.mock.calls.some(([url]) => String(url).endsWith("/auth/login"))).toBe(false);
+});
+
+it("checks health on demand when Connect AI is clicked and allows retrying after recovery", async () => {
+  let available = false;
+  const f = vi.fn(async (url: string) => {
+    if (url.endsWith("/auth/session")) return Response.json({ error: "UNAUTHENTICATED" }, { status: 401 });
+    if (url.endsWith("/auth/google/config")) return Response.json({ enabled: false, clientId: null });
+    if (url.endsWith("/goose/health")) return Response.json({ runner: "up", freeRunSlots: 2, agentAvailable: available });
+    throw new Error(`Unexpected URL: ${url}`);
+  });
+  vi.stubGlobal("fetch", f);
+  render(<Playground />);
+  const button = (await screen.findByRole("button", { name: "Connect AI" })) as HTMLButtonElement;
+  await waitFor(() => expect(screen.getByText("Unavailable right now.")).toBeTruthy());
+  expect(button.disabled).toBe(false);
+
+  fireEvent.click(button);
+  expect(await screen.findByText("AI connection is unavailable right now.")).toBeTruthy();
+  expect(FakeSocket.last).toBeNull();
+
+  available = true;
+  await connect();
+  expect(FakeSocket.last).not.toBeNull();
 });

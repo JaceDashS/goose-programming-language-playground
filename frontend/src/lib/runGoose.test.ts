@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RunResult } from "./contract";
 import { runGoose } from "./runGoose";
-import { agentAllowed, recheckDelayMs, stateFromHealth } from "./serviceState";
+import { agentAllowed, stateFromHealth } from "./serviceState";
 
 const endpoints = { primary: "https://api.example/goose/run", fallback: "/api/run" };
 
@@ -137,6 +137,23 @@ describe("runGoose", () => {
     const out = await runGoose("x", endpoints, { fetch: f });
     expect(out).toMatchObject({ kind: "error", state: "outage" });
   });
+
+  it("skips the primary when preferFallback is true and still retries on use_primary", async () => {
+    const { f, calls } = fakeFetch({
+      [endpoints.fallback]: [{ status: 200, body: result("sandbox") }],
+    });
+    const out = await runGoose("x", endpoints, { fetch: f, preferFallback: true });
+    expect(out).toMatchObject({ kind: "result", state: "degraded", result: { backend: "sandbox" } });
+    expect(calls).toEqual([endpoints.fallback]);
+
+    const recovered = fakeFetch({
+      [endpoints.fallback]: [{ status: 409, body: err("use_primary") }],
+      [endpoints.primary]: [{ status: 200, body: result("onprem") }],
+    });
+    const out2 = await runGoose("x", endpoints, { fetch: recovered.f, preferFallback: true });
+    expect(out2).toMatchObject({ kind: "result", state: "normal", result: { backend: "onprem" } });
+    expect(recovered.calls).toEqual([endpoints.fallback, endpoints.primary]);
+  });
 });
 
 describe("service state", () => {
@@ -153,12 +170,5 @@ describe("service state", () => {
     expect(agentAllowed("normal", h)).toBe(true);
     expect(agentAllowed("degraded", h)).toBe(false);
     expect(agentAllowed("normal", { ...h, agentAvailable: false })).toBe(false);
-  });
-
-  it("backs off while not normal", () => {
-    expect([0, 1, 2, 3, 4, 5].map((n) => recheckDelayMs("degraded", n))).toEqual([
-      5_000, 10_000, 20_000, 40_000, 60_000, 60_000,
-    ]);
-    expect(recheckDelayMs("normal", 3)).toBe(5_000);
   });
 });

@@ -30,7 +30,7 @@
 
 ## Service State
 
-- Code: `frontend/src/lib/serviceState.ts` → `stateFromHealth()`, `agentAllowed()`, `recheckDelayMs()`, `BANNER`.
+- Code: `frontend/src/lib/serviceState.ts` → `stateFromHealth()`, `agentAllowed()`, `BANNER`.
 - `stateFromHealth(health, fallbackDown)`: normal only when the runner is up with a free slot; otherwise degraded, or outage when the last fallback attempt failed.
 - The page component keeps `fallbackDown` from the last run, so a health check alone cannot hide an outage that a run has seen.
 

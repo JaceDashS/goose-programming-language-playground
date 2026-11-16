@@ -114,3 +114,32 @@ it("opens feedback inside the app, retains a rate limited draft and retries succ
   expect(screen.queryByRole("dialog", { name: "Feedback" })).toBeNull();
   expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toContain("Hello, Goose!");
 });
+
+it("routes straight to fallback after an initial health failure and keeps Run enabled during outage", async () => {
+  const { waitFor } = await import("@testing-library/react");
+  let fallbackCalls = 0;
+  const fetchMock = vi.fn(async (url: string) => {
+    if (url.endsWith("/goose/health")) return new Response("down", { status: 503 });
+    if (url.endsWith("/api/run")) {
+      fallbackCalls += 1;
+      if (fallbackCalls === 1) {
+        return Response.json({ error: { code: "unavailable", message: "down" } }, { status: 503 });
+      }
+      return Response.json({ outcome: "exited", exitCode: 0, stdout: "ok\n", stderr: "", diagnostics: [], truncated: false, durationMs: 1, backend: "sandbox" });
+    }
+    throw new Error(`Unexpected URL: ${url}`);
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<Playground />);
+  await waitFor(() => expect(screen.getByText(/The server is busy/)).toBeTruthy());
+
+  const runBtn = screen.getByRole("button", { name: "Run" }) as HTMLButtonElement;
+  fireEvent.click(runBtn);
+  await waitFor(() => expect(screen.getAllByText("Temporary service outage.").length).toBeGreaterThan(0));
+  expect(runBtn.disabled).toBe(false);
+  expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/goose/run"))).toBe(false);
+
+  fireEvent.click(runBtn);
+  await waitFor(() => expect(screen.getByText("ok")).toBeTruthy());
+  expect(screen.queryByText("Temporary service outage.")).toBeNull();
+});

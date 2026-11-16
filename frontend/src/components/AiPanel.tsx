@@ -7,8 +7,10 @@ import styles from "./Playground.module.css";
 
 interface Props {
   state: AgentState;
-  /** Whether the server can take a new AI connection now. */
+  /** Whether the server could take a new AI connection at the last check. */
   available: boolean;
+  checking?: boolean;
+  connectError?: string;
   loggedIn: boolean;
   onConnect(): void;
   onDisconnect(): void;
@@ -41,7 +43,7 @@ async function copy(text: string, done: (message: string) => void) {
 }
 
 /** The AI connection panel: connect, the starter prompt, status and setup help. */
-export default function AiPanel({ state, available, loggedIn, onConnect, onDisconnect, onLogin }: Props) {
+export default function AiPanel({ state, available, checking = false, connectError = "", loggedIn, onConnect, onDisconnect, onLogin }: Props) {
   const [message, setMessage] = useState("");
 
   // The starter prompt describes an HTTP API, so a terminal agent needs no setup; chat apps cannot
@@ -105,11 +107,11 @@ export default function AiPanel({ state, available, loggedIn, onConnect, onDisco
         <span className={styles.hint}>
           {available ? "Let an AI agent in your terminal (Claude Code or Codex) write, check and run code in this editor." : "Unavailable right now."}
         </span>
-        <button type="button" className={styles.run} onClick={onConnect} disabled={!available || state.status === "connecting"}>
-          {state.status === "connecting" ? "Connecting…" : state.status === "ended" ? "Connect again" : "Connect AI"}
+        <button type="button" className={styles.run} onClick={onConnect} disabled={checking || state.status === "connecting"}>
+          {checking || state.status === "connecting" ? "Connecting…" : state.status === "ended" ? "Connect again" : "Connect AI"}
         </button>
       </div>
-      {ended && <p className={styles.warning} role="status">{ended}</p>}
+      {(connectError || ended) && <p className={styles.warning} role="status">{connectError || ended}</p>}
       <p className={styles.hint}>
         {loggedIn ? "Logged in: a connection lasts up to 8 hours." : "Without logging in a connection lasts up to 2 hours."}
       </p>

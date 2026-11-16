@@ -5,7 +5,7 @@ import type { Health, ServiceState } from "@/lib/contract";
 import { runGoose } from "@/lib/runGoose";
 import { connectAgent, type AgentConnection, type AgentState, type AgentTool } from "@/lib/agentSession";
 import { createAccountClient, type AccountUser } from "@/lib/account";
-import { agentAllowed, BANNER, recheckDelayMs, stateFromHealth } from "@/lib/serviceState";
+import { agentAllowed, BANNER, stateFromHealth } from "@/lib/serviceState";
 import { endpoints } from "@/lib/endpoints";
 import { encodeShare, decodeShare, SHARE_INVALID } from "@/lib/share";
 import { samples } from "@/samples";
@@ -22,6 +22,15 @@ const HELLO = `fn main() {
 `;
 
 const account = createAccountClient(endpoints.account);
+
+async function fetchHubHealth(): Promise<Health | null> {
+  try {
+    const res = await fetch(endpoints.health, { cache: "no-store" });
+    return res.ok ? ((await res.json()) as Health) : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function Playground() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -42,6 +51,9 @@ export default function Playground() {
   const [health, setHealth] = useState<Health | null>(null);
   const [state, setState] = useState<ServiceState>("normal");
   const fallbackDown = useRef(false);
+  const primaryDown = useRef(false);
+  const [checkingAI, setCheckingAI] = useState(false);
+  const [aiConnectError, setAiConnectError] = useState("");
   const loadedCode = useRef(HELLO);
   const edited = useRef(false);
   const [shareMessage, setShareMessage] = useState("");
@@ -102,33 +114,27 @@ export default function Playground() {
     }
   };
 
-  // Recheck the hub's health on a schedule that backs off while not normal.
+  const applyHealth = useCallback((h: Health | null) => {
+    const next = stateFromHealth(h, fallbackDown.current);
+    if (next === "normal") fallbackDown.current = false;
+    primaryDown.current = next !== "normal";
+    setHealth(h);
+    setState(next);
+    return { health: h, state: next };
+  }, []);
+
+  const checkHealth = useCallback(async () => applyHealth(await fetchHubHealth()), [applyHealth]);
+
+  // Check the hub's health once on entry; runs and Connect AI update state from their own attempts.
   useEffect(() => {
-    let failures = 0;
-    let timer: ReturnType<typeof setTimeout>;
     let cancelled = false;
-    const check = async () => {
-      let h: Health | null = null;
-      try {
-        const res = await fetch(endpoints.health, { cache: "no-store" });
-        if (res.ok) h = (await res.json()) as Health;
-      } catch {
-        h = null;
-      }
-      if (cancelled) return;
-      const next = stateFromHealth(h, fallbackDown.current);
-      failures = next === "normal" ? 0 : failures + 1;
-      if (next === "normal") fallbackDown.current = false;
-      setHealth(h);
-      setState(next);
-      timer = setTimeout(check, recheckDelayMs(next, failures - 1));
-    };
-    check();
+    void fetchHubHealth().then((h) => {
+      if (!cancelled) applyHealth(h);
+    });
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, []);
+  }, [applyHealth]);
 
   const getToken = useCallback(async () => {
     if (!turnstile.current) throw new Error("The browser check is not ready yet.");
@@ -140,8 +146,12 @@ export default function Playground() {
     browserRunning.current = true;
     setRunning(true);
     try {
-      const out = await runGoose(code, endpoints, { getToken: siteKey ? getToken : undefined });
+      const out = await runGoose(code, endpoints, {
+        getToken: siteKey ? getToken : undefined,
+        preferFallback: primaryDown.current,
+      });
       fallbackDown.current = out.state === "outage";
+      primaryDown.current = out.state !== "normal";
       setState(out.state);
       setByAI(false);
       setOutcome(out);
@@ -151,7 +161,18 @@ export default function Playground() {
     }
   }, [code, siteKey, getToken]);
 
-  const connectAI = () => {
+  const connectAI = async () => {
+    setAiConnectError("");
+    setCheckingAI(true);
+    try {
+      const latest = await checkHealth();
+      if (!agentAllowed(latest.state, latest.health)) {
+        setAiConnectError("AI connection is unavailable right now.");
+        return;
+      }
+    } finally {
+      setCheckingAI(false);
+    }
     connection.current?.disconnect();
     connection.current = connectAgent(endpoints.session, {
       onLock: (tool) => {
@@ -197,7 +218,7 @@ export default function Playground() {
   };
 
   const banner = BANNER[state];
-  const canRun = state !== "outage" && !running && aiLock === null;
+  const canRun = !running && aiLock === null;
 
   return (
     <div className={styles.shell}>
@@ -308,9 +329,11 @@ export default function Playground() {
 
       <AiPanel
         state={agent}
-        available={agentAllowed(state, health)}
+        available={health === null ? state === "normal" : agentAllowed(state, health)}
+        checking={checkingAI}
+        connectError={aiConnectError}
         loggedIn={!!user}
-        onConnect={connectAI}
+        onConnect={() => { void connectAI(); }}
         onDisconnect={disconnectAI}
         onLogin={() => setLoginOpen(true)}
       />

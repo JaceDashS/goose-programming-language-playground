@@ -10,8 +10,8 @@
 - The page shows the service state:
   - Normal: no banner; the AI connection may be offered.
   - Degraded: "The server is busy, so the AI connection (MCP) is unavailable. You can still use the playground."
-  - Outage: "Temporary service outage." Run is disabled; editing still works.
-- The page rechecks the hub's health every 5 s while normal, and backs off to 5, 10, 20, 40, then 60 s while not normal.
+  - Outage: "Temporary service outage." Run remains enabled so the user can retry; editing still works.
+- The page checks the hub's health once on entry and on demand when Connect AI is clicked. When the initial check or previous run saw the primary down or busy, runs go straight to the Vercel fallback (which still returns `use_primary` if the primary has recovered).
 - Sample and Share use the toolbar theme: matching control height, rounded borders, light and dark colors, visible keyboard focus, and at phone widths a sample field that never shrinks below a usable width.
 - Scrollbars follow the light or dark theme.
 - The layout works from phone width (one column) to desktop (editor and output side by side).
