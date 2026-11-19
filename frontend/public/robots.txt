@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://goose-playground.jace-s.com/sitemap.xml
