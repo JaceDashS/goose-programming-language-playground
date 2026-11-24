@@ -2,7 +2,7 @@
 
 - Spec: [Vercel Fallback](../../specs/run/30-vercel-fallback.md)
 - Architecture: [Overview](../../architecture/10-overview.md), [Data Flow](../../architecture/20-data-flow.md)
-- All scenarios: [Vercel Fallback Scenarios](../../testing/scenarios/run/30-vercel-fallback.md)
+- All scenarios: [Vercel Fallback Scenarios](../../testing/test-cases/run/30-vercel-fallback.md)
 
 ## Implementation
 

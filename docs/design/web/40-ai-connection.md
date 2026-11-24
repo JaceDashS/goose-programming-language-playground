@@ -3,7 +3,7 @@
 - Spec: [AI Connection](../../specs/web/40-ai-connection.md)
 - Architecture: [Data Flow](../../architecture/20-data-flow.md#agent-session)
 - API: [Session Socket](../../api/20-socket.md)
-- All scenarios: [AI Connection Scenarios](../../testing/scenarios/web/40-ai-connection.md#ai-connection-scenarios)
+- All scenarios: [AI Connection Scenarios](../../testing/test-cases/web/40-ai-connection.md#ai-connection-scenarios)
 
 The tab is the editor's only owner. The hub forwards the AI's requests as socket messages; the tab answers with the editor content or applies a replacement, and shows results.
 
@@ -52,4 +52,4 @@ stateDiagram-v2
 - While a browser run is pending, onLock refuses the AI tool. Failure notices do not overwrite browser output or clear another AI operation's busy state. Subsequent tool acceptance clears the old notice.
 - Shared URL restoration does not overwrite an actively locked editor. Share remains usable because it reads code rather than replacing or executing it.
 - Scenario: A run owns t1 and a set_code fails → display its reason without clearing t1 → stale toolFinished for t2 does nothing → toolFinished t1 unlocks.
-- Full cases: [AI Connection Scenarios](../../testing/scenarios/web/40-ai-connection.md).
+- Full cases: [AI Connection Scenarios](../../testing/test-cases/web/40-ai-connection.md).

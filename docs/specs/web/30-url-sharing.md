@@ -18,4 +18,4 @@
 - Result: Opening that URL in a new tab shows the same code, Korean text intact.
 
 - Design: [URL Sharing Design](../../design/web/30-url-sharing.md)
-- Scenarios: [URL Sharing Scenarios](../../testing/scenarios/web/30-url-sharing.md)
+- Scenarios: [URL Sharing Scenarios](../../testing/test-cases/web/30-url-sharing.md)

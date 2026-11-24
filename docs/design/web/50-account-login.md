@@ -2,7 +2,7 @@
 
 - Spec: [Account Login](../../specs/web/50-account-login.md)
 - Architecture: [Overview](../../architecture/10-overview.md#agent-mode)
-- All scenarios: [Account Login Scenarios](../../testing/scenarios/web/50-account-login.md#account-login-scenarios)
+- All scenarios: [Account Login Scenarios](../../testing/test-cases/web/50-account-login.md#account-login-scenarios)
 
 The page calls the jace-s account API on `api.jace-s.com` with `credentials: "include"`. The API sets its session cookie on that host only; the hub at `api.jace-s.com/goose` receives the same cookie on the socket upgrade and asks the API who it belongs to, without renewing it.
 

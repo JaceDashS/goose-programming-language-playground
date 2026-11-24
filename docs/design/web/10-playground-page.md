@@ -2,7 +2,7 @@
 
 - Spec: [Playground Page](../../specs/web/10-playground-page.md)
 - Architecture: [Overview](../../architecture/10-overview.md#service-states), [Data Flow](../../architecture/20-data-flow.md#fallback)
-- All scenarios: [Playground Page Scenarios](../../testing/scenarios/web/10-playground-page.md#playground-page-scenarios)
+- All scenarios: [Playground Page Scenarios](../../testing/test-cases/web/10-playground-page.md#playground-page-scenarios)
 
 ## Run Client
 
@@ -26,7 +26,7 @@
 - The widget is rendered once with `execution: "execute"` and `appearance: "interaction-only"`. Each `getToken()` resets and executes it; a newer request rejects the older pending one, and an old timer cannot cancel a newer request.
 - No site key → no script, no container, no token. The hub and the fallback skip verification while their `TURNSTILE_SECRET` is empty, so the order of rollout is page first, then secrets.
 - Scenario: Hub `busy` → `getToken()` is called again → the fallback receives a token the hub never saw.
-- All scenarios: [Turnstile Tokens](../../testing/scenarios/web/10-playground-page.md#turnstile-tokens).
+- All scenarios: [Turnstile Tokens](../../testing/test-cases/web/10-playground-page.md#turnstile-tokens).
 
 ## Service State
 
@@ -61,7 +61,7 @@
 - Example input: A 375 px viewport with focus on Sample.
 - Example steps: Tab to Sample, choose a sample, then focus and activate Share.
 - Expected result: Visible focus, readable themed controls, no horizontal overflow and an unchanged share workflow.
-- Scenarios: [Playground Page Scenarios](../../testing/scenarios/web/10-playground-page.md#toolbar-theme-and-responsive-layout).
+- Scenarios: [Playground Page Scenarios](../../testing/test-cases/web/10-playground-page.md#toolbar-theme-and-responsive-layout).
 
 ## AI Tool Ownership
 

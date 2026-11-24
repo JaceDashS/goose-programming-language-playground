@@ -23,4 +23,4 @@
 - Result: 409 `use_primary`; no sandbox is created and the cap counters do not change.
 
 - Design: [Vercel Fallback Design](../../design/run/30-vercel-fallback.md)
-- Scenarios: [Vercel Fallback Scenarios](../../testing/scenarios/run/30-vercel-fallback.md)
+- Scenarios: [Vercel Fallback Scenarios](../../testing/test-cases/run/30-vercel-fallback.md)

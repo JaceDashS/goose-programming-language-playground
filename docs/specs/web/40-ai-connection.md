@@ -4,7 +4,7 @@ The AI connection panel lets Claude, ChatGPT, Claude Code or Codex edit, check a
 
 - Design: [AI Connection Design](../../design/web/40-ai-connection.md)
 - API: [Session Socket](../../api/20-socket.md)
-- Scenarios: [AI Connection Scenarios](../../testing/scenarios/web/40-ai-connection.md)
+- Scenarios: [AI Connection Scenarios](../../testing/test-cases/web/40-ai-connection.md)
 
 ## Requirements
 

@@ -18,4 +18,4 @@
 - Result: The freshness test fails and names `run-result.schema.json`.
 
 - Design: [Contract Types Design](../../design/web/15-contract-types.md)
-- Scenarios: [Contract Types Scenarios](../../testing/scenarios/web/15-contract-types.md)
+- Scenarios: [Contract Types Scenarios](../../testing/test-cases/web/15-contract-types.md)

@@ -8,7 +8,7 @@ The header mounts FeedbackDialog using an HTML dialog and showModal. The browser
 
 - Spec: [Feedback Dialogs](../../specs/web/60-feedback-dialogs.md)
 - Architecture: [Overview](../../architecture/10-overview.md)
-- Scenarios: [Feedback Dialogs](../../testing/scenarios/web/60-feedback-dialogs.md)
+- Scenarios: [Feedback Dialogs](../../testing/test-cases/web/60-feedback-dialogs.md)
 
 ## Example
 

@@ -2,7 +2,7 @@
 
 - Spec: [Contract Types](../../specs/web/15-contract-types.md)
 - Architecture: [Overview](../../architecture/10-overview.md), [Data Flow](../../architecture/20-data-flow.md)
-- All scenarios: [Contract Types Scenarios](../../testing/scenarios/web/15-contract-types.md)
+- All scenarios: [Contract Types Scenarios](../../testing/test-cases/web/15-contract-types.md)
 
 ## Implementation
 

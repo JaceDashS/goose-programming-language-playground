@@ -2,7 +2,7 @@
 
 - Spec: [Samples](../../specs/web/20-samples.md)
 - Architecture: [Overview](../../architecture/10-overview.md), [Data Flow](../../architecture/20-data-flow.md)
-- All scenarios: [Samples Scenarios](../../testing/scenarios/web/20-samples.md)
+- All scenarios: [Samples Scenarios](../../testing/test-cases/web/20-samples.md)
 
 ## Implementation
 

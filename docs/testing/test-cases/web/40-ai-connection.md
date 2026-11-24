@@ -4,7 +4,7 @@
 
 - Design: [AI Connection Design](../../../design/web/40-ai-connection.md)
 
-Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s platform (`docs/testing/scenarios/goose/30-agent-session.md`).
+Hub-side scenarios (lifetimes, caps, MCP tools, run limits) live in the jace-s platform (`docs/testing/test-cases/goose/30-agent-session.md`).
 
 ### No Session Until Connect
 - Input: The page loads with the hub Normal.

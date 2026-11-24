@@ -2,7 +2,7 @@
 
 - Spec: [URL Sharing](../../specs/web/30-url-sharing.md)
 - Architecture: [Overview](../../architecture/10-overview.md), [Data Flow](../../architecture/20-data-flow.md)
-- All scenarios: [URL Sharing Scenarios](../../testing/scenarios/web/30-url-sharing.md)
+- All scenarios: [URL Sharing Scenarios](../../testing/test-cases/web/30-url-sharing.md)
 
 ## Implementation
 

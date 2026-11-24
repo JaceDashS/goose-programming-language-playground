@@ -3,7 +3,7 @@
 Logging in with a jace-s account gives AI connections the longer lifetime (goose D-0041, D-0043). Nothing else on the page needs a login.
 
 - Design: [Account Login Design](../../design/web/50-account-login.md)
-- Scenarios: [Account Login Scenarios](../../testing/scenarios/web/50-account-login.md)
+- Scenarios: [Account Login Scenarios](../../testing/test-cases/web/50-account-login.md)
 
 ## Requirements
 

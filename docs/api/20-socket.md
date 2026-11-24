@@ -6,7 +6,7 @@
 - Spec: [AI Connection](../specs/web/40-ai-connection.md); hub side in the jace-s platform (`docs/specs/goose/30-agent-session.md`)
 - Design: [AI Connection Design](../design/web/40-ai-connection.md#session-client)
 - Architecture: [Data Flow](../architecture/20-data-flow.md#agent-session)
-- MCP tools: [Agent Mode](../architecture/10-overview.md#agent-mode); full contract in the jace-s platform (`docs/api/apps/goose/30-mcp.md`)
+- MCP tools: [Agent Mode](../architecture/10-overview.md#agent-mode); full contract in the jace-s platform (`docs/api/64-goose-mcp.md`)
 
 ## Connection
 
